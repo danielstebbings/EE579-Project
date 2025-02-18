@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "C:/Users/logan/Desktop/college/UNI YEAR 4/EE579 Advanced Microcontrollers/_sensors/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}

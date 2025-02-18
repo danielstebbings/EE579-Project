@@ -1,0 +1,19 @@
+{
+    "C_Cpp.intelliSenseEngine": "default",
+    "idf.espIdfPathWin": "C:\\Users\\logan\\esp\\v5.4\\esp-idf",
+    "idf.toolsPathWin": "c:\\Espressif\\tools",
+    "idf.flashType": "UART",
+    "idf.portWin": "COM4",
+    "idf.openOcdConfigs": [
+        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "target/esp32.cfg"
+    ],
+    "files.associations": {
+        "task.h": "c",
+        "sdkconfig.h": "c",
+        "esp_log.h": "c",
+        "esp_timer.h": "c",
+        "gpio.h": "c",
+        "freertos.h": "c"
+    }
+}
