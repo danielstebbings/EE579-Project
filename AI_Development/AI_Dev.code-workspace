@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "Xiao_Data_Gathering"
+		},
+		{
+			"path": "../../example-standalone-inferencing-espressif-esp32"
+		}
+	],
+	"settings": {}
+}
