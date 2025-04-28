@@ -82,7 +82,7 @@ esp_err_t camera_capture(uint8_t *image_buffer) {
     return ESP_OK;
 }
 
-int feature_get_data(size_t offset, size_t length, float* out_ptr) {
+int feature_get_data(unsigned int offset, unsigned int length, float* out_ptr) {
     // https://github.com/edgeimpulse/firmware-espressif-esp32/blob/main/edge-impulse/inference/ei_run_camera_impulse.cpp#L63
     // we already have a RGB888 buffer, so recalculate offset into pixel index
     size_t pixel_ix = offset * 3;
