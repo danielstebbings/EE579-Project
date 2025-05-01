@@ -5,23 +5,94 @@
 #include "freertos/task.h"
 
 #include "ultrasonic.h"
+#include "motors.h"
+#include "bluetooth.h"
 
-/*
- * TODO: MERGE JAMES CODE
- */
+static const char* TAG_BT = "BLUETOOTH";
+// Bluetooth Event Handler
+void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
+{
+    switch (event)
+    {
+    case ESP_SPP_INIT_EVT:
+        esp_bt_dev_set_device_name(DEVICE_NAME);
+        esp_spp_start_srv(ESP_SPP_SEC_NONE, ESP_SPP_ROLE_SLAVE, 0, SPP_SERVER_NAME);
+        esp_bt_gap_set_scan_mode(ESP_BT_CONNECTABLE, ESP_BT_GENERAL_DISCOVERABLE);
+        break;
+  
+    case ESP_SPP_START_EVT:
+        ESP_LOGI(TAG_BT, "SPP Server Started");
+        break;
+    case ESP_SPP_DATA_IND_EVT:
+        param->data_ind.data[param->data_ind.len] = 0; // Null terminate incoming data
+        ESP_LOGI(TAG_BT, "Received: %s", (char *)param->data_ind.data);
 
-static const char *TAG = "ULTRASONIC";
+        if (strcmp((char *)param->data_ind.data, "on") == 0)
+        {
+            magnet_on();
+        }
+        else if (strcmp((char *)param->data_ind.data, "off") == 0)
+        {
+            magnet_off();
+        }
+        else if (strstr((char *)param->data_ind.data, "angle:") != NULL)
+        {
+            int angle = atoi((char *)param->data_ind.data + 6);
+            set_servo_angle(angle);
+            ESP_LOGI(TAG_BT, "Set servo angle to: %d degrees", angle);
+        }
+        break;
+    default:
+        break;
+    }
+}
 
 
-void app_main(void) {  
+void bluetooth_init()
+{
+    esp_err_t ret = esp_bt_controller_mem_release(ESP_BT_MODE_BLE);
+    if (ret) { ESP_LOGW(TAG_BT, "Bluetooth controller release BLE memory failed: %s", esp_err_to_name(ret)); }
+
+    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    ret = esp_bt_controller_init(&bt_cfg);
+    if (ret) { ESP_LOGE(TAG_BT, "Bluetooth controller initialize failed: %s", esp_err_to_name(ret)); }
+
+    ret = esp_bt_controller_enable(ESP_BT_MODE_BTDM);
+    if (ret) { ESP_LOGE(TAG_BT, "Bluetooth controller enable failed: %s", esp_err_to_name(ret)); }
+
+    ret = esp_bluedroid_init();
+    if (ret) { ESP_LOGE(TAG_BT, "Bluedroid initialize failed: %s", esp_err_to_name(ret)); }
+
+    ret = esp_bluedroid_enable();
+    if (ret) { ESP_LOGE(TAG_BT, "Bluedroid enable failed: %s", esp_err_to_name(ret)); }
+
+    esp_spp_register_callback(esp_spp_cb);
+    esp_spp_init(ESP_SPP_MODE_CB);
+}
+
+
+static const char *TAG_US = "ULTRASONIC";
+
+void app_main(void) { 
+  
+  bluetooth_init();
+
+  setupMotors();
 
   setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1);
+
+  esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
   while(1)
   {
     float distance = measure_distance(ECHO_PIN_US1);
 
-    ESP_LOGI(TAG, "Distance measured by ultrasonic : %f", distance);
+    ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance);
     
     vTaskDelay(pdMS_TO_TICKS(10));
   }

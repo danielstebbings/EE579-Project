@@ -1,5 +1,5 @@
-#ifndef __TIMERS_H__
-#define __TIMERS_H__
+#ifndef __ULTRASONIC_H__
+#define __ULTRASONIC_H__
 
 /*
     EE579 MCU April 2025
@@ -34,4 +34,4 @@ extern volatile int distance;
 void setupUltrasonic(int ECHO_PIN, int TRIG_PIN, int CHANNEL);
 float measure_distance(int ECHO_PIN);
 
-#endif //__TIMERS_H__
+#endif //__ULTRASONIC_H__
