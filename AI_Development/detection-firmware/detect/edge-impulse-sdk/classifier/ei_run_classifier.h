@@ -137,7 +137,7 @@ __attribute__((unused)) void display_results(ei_impulse_handle_t *handle, ei_imp
         }
         ei_printf("    %s (", bb.label);
         ei_printf_float(bb.value);
-        ei_printf(") [ x: %u, y: %u, width: %u, height: %u ]\n", bb.x, bb.y, bb.width, bb.height);
+        ei_printf(") [ x: %lu, y: %lu, width: %lu, height: %lu ]\n", bb.x, bb.y, bb.width, bb.height);
     }
 
     if (!bb_found) {
@@ -304,12 +304,12 @@ extern "C" EI_IMPULSE_ERROR process_impulse(ei_impulse_handle_t *handle,
 
         matrix_ptrs[ix] = std::unique_ptr<ei::matrix_t>(new ei::matrix_t(1, block.n_output_features));
         if (matrix_ptrs[ix] == nullptr) {
-            ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%lu]\n", ix);
+            ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%u]\n", ix);
             return EI_IMPULSE_ALLOC_FAILED;
         }
 
         if (matrix_ptrs[ix]->buffer == nullptr) {
-            ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%lu]\n", ix);
+            ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%u]\n", ix);
             delete[] matrix_ptrs;
             return EI_IMPULSE_ALLOC_FAILED;
         }
@@ -555,12 +555,12 @@ extern "C" EI_IMPULSE_ERROR process_impulse_continuous(ei_impulse_handle_t *hand
             matrix_ptrs[ix] = std::unique_ptr<ei::matrix_t>(new ei::matrix_t(1, block.n_output_features));
             
             if (matrix_ptrs[ix] == nullptr) {
-                ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%lu]\n", ix);
+                ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%u]\n", ix);
                 return EI_IMPULSE_ALLOC_FAILED;
             }
 
             if (matrix_ptrs[ix]->buffer == nullptr) {
-                ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%lu]\n", ix);
+                ei_printf("ERR: Out of memory, can't allocate matrix_ptrs[%u]\n", ix);
                 delete[] matrix_ptrs;
                 return EI_IMPULSE_ALLOC_FAILED;
             }

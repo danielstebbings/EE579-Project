@@ -46,7 +46,7 @@ esp_err_t camera_init() {
     // initialize the camera
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Camera Init Failed");
+        ////ESP_LOGE(TAG, "Camera Init Failed");
         return err;
     }
     return ESP_OK;
@@ -57,7 +57,7 @@ esp_err_t camera_capture(uint8_t *image_buffer) {
     // acquire a frame
     camera_fb_t *fb = esp_camera_fb_get();
     if (!fb) {
-        ESP_LOGE(TAG, "Camera Capture Failed");
+        //ESP_LOGE(TAG, "Camera Capture Failed");
         return ESP_FAIL;
     }
     // replace this with your own function
@@ -82,7 +82,7 @@ esp_err_t camera_capture(uint8_t *image_buffer) {
     return ESP_OK;
 }
 
-int feature_get_data(unsigned int offset, unsigned int length, float* out_ptr) {
+int feature_get_data(size_t offset, size_t length, float* out_ptr) {
     // https://github.com/edgeimpulse/firmware-espressif-esp32/blob/main/edge-impulse/inference/ei_run_camera_impulse.cpp#L63
     // we already have a RGB888 buffer, so recalculate offset into pixel index
     size_t pixel_ix = offset * 3;
@@ -105,7 +105,7 @@ int feature_get_data(unsigned int offset, unsigned int length, float* out_ptr) {
 EI_IMPULSE_ERROR run_model(const ei_impulse_t* impulse, signal_t* image, ei_impulse_result_t* result) {
     EI_IMPULSE_ERROR classifier_error = run_classifier_image_quantized(impulse, image, result, true);
     if (classifier_error != EI_IMPULSE_OK) {
-        ESP_LOGE(TAG, "Classifier Failed");
+        //ESP_LOGE(TAG, "Classifier Failed");
     } else {
         ESP_LOGI(TAG, "Detected: %i Objects ", result->bounding_boxes_count);
         return EI_IMPULSE_OK;
@@ -116,7 +116,7 @@ EI_IMPULSE_ERROR detect(ei_impulse_result_t* result) {
     // Take photo
     esp_err_t cap_error = camera_capture(snapshot_buf);
     if (cap_error != ESP_OK) {
-        ESP_LOGE(TAG,"Capture Failed");
+        //ESP_LOGE(TAG,"Capture Failed");
         return EI_IMPULSE_DSP_ERROR;
     } else{
         ESP_LOGI(TAG,"Successful capture");
@@ -126,11 +126,11 @@ EI_IMPULSE_ERROR detect(ei_impulse_result_t* result) {
     signal_t image;
     // Width * height * 3 Bytes per pixel
     image.total_length = EI_CLASSIFIER_INPUT_WIDTH * EI_CLASSIFIER_INPUT_HEIGHT * 3;
-    image.get_data = &feature_get_data;
+    image.get_data = static_cast<int(*)(size_t, size_t, float*)>(&feature_get_data); // Solving unresolved overload errors by static cast, What could go wrong?
 
     EI_IMPULSE_ERROR model_error = run_model(&impulse, &image, result);
     if (model_error != EI_IMPULSE_OK) {
-        ESP_LOGE(TAG,"Model Run failed");
+        //ESP_LOGE(TAG,"Model Run failed");
         return model_error;
     } else {
         ESP_LOGI(TAG, "Model Run Succesful");

@@ -42,7 +42,7 @@ list(APPEND SOURCE_FILES ${C_FILES})
 list(APPEND SOURCE_FILES ${CC_FILES})
 list(APPEND SOURCE_FILES ${MODEL_FILES})
 
-idf_component_register(SRCS "cam_handling.cpp" "main.c"
+idf_component_register(SRCS "cam_handling.cpp" "main.cpp"
                     INCLUDE_DIRS "${include_dirs}")
 
 target_compile_options(${COMPONENT_LIB} PRIVATE -O3)                    

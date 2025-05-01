@@ -101,7 +101,7 @@ public:
         for (size_t row = 0; row < input_matrix.rows; row++) {
             matrix_t row_matrix(1, input_matrix.cols, input_matrix.buffer + (row * input_matrix.cols));
 
-            float mean; // to use with moving average
+            float mean = 0.0; // to use with moving average
 
             if (config.average || config.moving_avg_num_windows) {
                 float fbuffer;

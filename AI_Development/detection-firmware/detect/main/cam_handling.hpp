@@ -1,5 +1,6 @@
 #include "esp_err.h"
 #include "model_variables.h"
+#include "classifier/ei_classifier_types.h"
 
 #define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM
 
@@ -36,6 +37,6 @@ esp_err_t camera_capture(uint8_t *snapshot_buf);
 
 int feature_get_data(size_t offset, size_t length, uint8_t* out_ptr);
 
-EI_IMPULSE_ERROR run_model(const ei_impulse_t* impulse, signal_t* image, ei_impulse_result_t* result)
+EI_IMPULSE_ERROR run_model(const ei_impulse_t* impulse, signal_t* image, ei_impulse_result_t* result);
 
-EI_IMPULSE_ERROR detect(ei_impulse_result_t* result)
+EI_IMPULSE_ERROR detect(ei_impulse_result_t* result);
