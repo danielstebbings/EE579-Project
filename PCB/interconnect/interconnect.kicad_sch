@@ -1,0 +1,301 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "26e2939b-86bf-449d-bb10-5d375a1d0286")
+	(paper "A4")
+	(lib_symbols)
+	(wire
+		(pts
+			(xy 118.11 90.17) (xy 125.73 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1ca68923-7313-4667-9805-c0e5f7eb75c7")
+	)
+	(bus
+		(pts
+			(xy 111.76 53.34) (xy 142.24 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "55ed041b-8103-470f-b34f-5fd3a2a9f146")
+	)
+	(bus
+		(pts
+			(xy 111.76 57.15) (xy 142.24 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "67ad5a39-0dc8-4c07-a149-1f299cb9c31a")
+	)
+	(bus
+		(pts
+			(xy 111.76 63.5) (xy 142.24 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a1e0269f-ecce-40fb-9297-ce48d04abf81")
+	)
+	(wire
+		(pts
+			(xy 111.76 60.96) (xy 142.24 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d1e42859-0c29-4b84-8a48-a3c34c6f6bdd")
+	)
+	(wire
+		(pts
+			(xy 111.76 78.74) (xy 118.11 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dcf93487-856c-4503-a254-292bb9946264")
+	)
+	(wire
+		(pts
+			(xy 118.11 78.74) (xy 118.11 90.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fceaec25-7b29-4840-a205-6ca9705f4658")
+	)
+	(sheet
+		(at 30.48 44.45)
+		(size 81.28 38.1)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "7ba70076-6a38-444c-89f2-ef9f768a9f04")
+		(property "Sheetname" "Connectors"
+			(at 30.48 43.7384 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "connectors.kicad_sch"
+			(at 30.48 83.1346 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "ESC_5V" input
+			(at 111.76 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "2fc4a972-8601-4ed8-9d83-4cf13915230d")
+		)
+		(pin "ULTRASONICS{US1_TRIGG,US1_ECHO,US2_TRIGG,US2_ECHO,US3_TRIGG,US3_ECHO}"
+			bidirectional
+			(at 111.76 57.15 0
+			)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "62980f59-bdd3-404c-9261-b242575f2fac")
+		)
+		(pin "Magnet_PWM" input
+			(at 111.76 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "87d0428d-a5de-4c1a-8c13-2ef507f56b4a")
+		)
+		(pin "MOTORS{ESC,Steering, Magnet}" bidirectional
+			(at 111.76 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "ffac8b34-65a0-40e5-8b25-dcb34ae6b154")
+		)
+		(pin "XIAO{SDA,SCL}" bidirectional
+			(at 111.76 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "65b0d629-286c-41b6-b632-6611f436c446")
+		)
+		(instances
+			(project "interconnect"
+				(path "/26e2939b-86bf-449d-bb10-5d375a1d0286"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 142.24 45.72)
+		(size 38.1 20.32)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "9e0e364e-1f66-47e1-b094-b84547c4ad5a")
+		(property "Sheetname" "MCUs"
+			(at 142.24 45.0084 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "MCUs.kicad_sch"
+			(at 142.24 66.6246 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "MOTORS{ESC,Steering, Magnet}" bidirectional
+			(at 142.24 63.5 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "3299551f-b002-4b34-b877-6e8badd0217f")
+		)
+		(pin "Magnet_PWM" input
+			(at 142.24 60.96 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "fc48694c-f3cf-4769-9f34-c532ebe4f2ae")
+		)
+		(pin "ULTRASONICS{US1_TRIGG,US1_ECHO,US2_TRIGG,US2_ECHO,US3_TRIGG,US3_ECHO}"
+			bidirectional
+			(at 142.24 57.15 180
+			)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "78f9ae66-94ac-41c0-81be-be19ee87cac8")
+		)
+		(pin "XIAO{SDA,SCL}" bidirectional
+			(at 142.24 53.34 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "a183dbc0-d73f-446d-8872-e4814d76b884")
+		)
+		(instances
+			(project "interconnect"
+				(path "/26e2939b-86bf-449d-bb10-5d375a1d0286"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 125.73 85.09)
+		(size 30.48 11.43)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "e821f667-bdda-44df-8166-1c8bebd43734")
+		(property "Sheetname" "Power"
+			(at 125.73 84.3784 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Power.kicad_sch"
+			(at 125.73 97.1046 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "ESC_5V" input
+			(at 125.73 90.17 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "7f78f11f-45f0-4ca2-b19d-640086e3e93c")
+		)
+		(instances
+			(project "interconnect"
+				(path "/26e2939b-86bf-449d-bb10-5d375a1d0286"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+)
