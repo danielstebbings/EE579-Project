@@ -10,5 +10,5 @@
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32"
     },
-    "idf.portWin": "COM7"
+    "idf.portWin": "COM8"
 }

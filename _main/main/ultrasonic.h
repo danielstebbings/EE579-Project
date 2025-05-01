@@ -18,8 +18,12 @@
 
 #define SOUND_SPEED 0.034
 
-#define TRIG_PIN 25
-#define ECHO_PIN 26
+#define TRIG_PIN_US1 25
+#define ECHO_PIN_US1 26
+#define TRIG_PIN_US2 99     //TODO: DEFINE PINS
+#define ECHO_PIN_US2 99
+#define TRIG_PIN_US3 99
+#define ECHO_PIN_US3 99
 
 extern volatile bool timer_state;
 extern volatile int distance;
@@ -27,7 +31,7 @@ extern volatile int distance;
 //define onboard LED for debugging.
 #define LED 2
 
-void setupUltrasonic();
-float measure_distance();
+void setupUltrasonic(int ECHO_PIN, int TRIG_PIN, int CHANNEL);
+float measure_distance(int ECHO_PIN);
 
 #endif //__TIMERS_H__
