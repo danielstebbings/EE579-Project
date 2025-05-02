@@ -515,8 +515,8 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "U"
-				(at 0 8.89 0)
+			(property "Reference" "U401"
+				(at 0 10.16 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -524,7 +524,7 @@
 				)
 			)
 			(property "Value" "AMS1117"
-				(at 0 6.35 0)
+				(at 0 7.62 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -781,7 +781,7 @@
 				)
 			)
 			(symbol "LDO, 3.3V, 1A_1_1"
-				(pin unspecified line
+				(pin power_out line
 					(at 7.62 2.54 180)
 					(length 2.54) hide
 					(name "VOUT"
@@ -799,7 +799,7 @@
 						)
 					)
 				)
-				(pin unspecified line
+				(pin power_in line
 					(at -7.62 2.54 0)
 					(length 2.54)
 					(name "VIN"
@@ -1093,8 +1093,8 @@
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "Q"
-				(at 4.8514 0.834 0)
+			(property "Reference" "Q401"
+				(at 6.35 1.2701 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -1103,7 +1103,7 @@
 				)
 			)
 			(property "Value" "AO3401A"
-				(at 4.8514 -1.2122 0)
+				(at 6.35 -1.27 0)
 				(effects
 					(font
 						(size 0.8 0.8)
@@ -1504,7 +1504,7 @@
 						)
 					)
 				)
-				(pin passive line
+				(pin power_out line
 					(at 2.54 -5.08 90)
 					(length 2.54)
 					(name "S"
