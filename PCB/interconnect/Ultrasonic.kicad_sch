@@ -815,7 +815,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(uuid "1151ff60-70b2-479d-bbb0-2501938e7248")
 		(property "Reference" "J701"
@@ -902,7 +902,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "447be488-56c4-40d2-88a2-1cff2e13ef22")
-		(property "Reference" "#PWR0501"
+		(property "Reference" "#PWR0701"
 			(at 116.84 97.79 0)
 			(effects
 				(font
@@ -1050,7 +1050,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a8117db6-d748-446e-ae1a-66ea55e82e4a")
-		(property "Reference" "C501"
+		(property "Reference" "C701"
 			(at 119.38 96.5199 0)
 			(effects
 				(font
@@ -1254,7 +1254,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d7d79eb3-f499-464f-98c7-22a37e607835")
-		(property "Reference" "#PWR0502"
+		(property "Reference" "#PWR0702"
 			(at 116.84 110.49 0)
 			(effects
 				(font
