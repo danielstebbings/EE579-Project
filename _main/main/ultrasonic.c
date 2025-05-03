@@ -22,14 +22,13 @@ void setupUltrasonic(int ECHO_PIN, int TRIG_PIN, int CHANNEL)
         .clk_cfg = LEDC_AUTO_CLK
     };
     ledc_timer_config(&timer);
-    //25000us timer
 
 
     //trig channel      -- can be replicated just need to change the led channel.
     ledc_channel_config_t trig_channel = {
         .gpio_num = TRIG_PIN,
         .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .channel = LEDC_CHANNEL_3,
+        .channel = LEDC_CHANNEL_3,  //TODO: might need fixing when all 3 are on.
         .timer_sel = LEDC_TIMER_1,
         .duty = 6,    
         .hpoint = 0 

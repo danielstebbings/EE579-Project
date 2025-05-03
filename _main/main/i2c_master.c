@@ -35,3 +35,15 @@ i2c_master_dev_handle_t get_dev_handle(void)
 {
     return dev_handle;
 }
+
+void i2c_master_test(void)
+{
+    uint8_t data[] = {'1', '2', '3'};
+    esp_err_t ret = i2c_master_transmit(dev_handle, data, sizeof(data), -1);
+
+    if(ret == ESP_OK) {
+        ESP_LOGI("I2C_MASTER", "Sent data: %s", data);
+    } else {
+        ESP_LOGE("I2C_MASTER", "Transmission failed: %s", esp_err_to_name(ret));
+    }
+}
