@@ -1,9 +1,17 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
-    "idf.espIdfPathWin": "C:\\Users\\logan\\esp\\v5.4\\esp-idf",
+    "idf.espIdfPathWin": "C:\\Users\\logan\\esp\\v5.4.1\\esp-idf",
     "idf.openOcdConfigs": [
-        "interface/ftdi/esp32_devkitj_v1.cfg",
-        "target/esp32.cfg"
+        "board/esp32-bridge.cfg"
     ],
-    "idf.toolsPathWin": "c:\\Espressif\\tools"
+    "idf.toolsPathWin": "C:\\Espressif",
+    "idf.pythonInstallPath": "C:\\Espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "idf.flashType": "UART",
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32"
+    },
+    "idf.portWin": "COM5",
+    "files.associations": {
+        "esp_bt_device.h": "c"
+    }
 }

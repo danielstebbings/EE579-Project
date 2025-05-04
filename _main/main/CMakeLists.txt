@@ -1,3 +1,2 @@
-idf_component_register(SRCS "main.c"
-                    PRIV_REQUIRES spi_flash
-                    INCLUDE_DIRS "")
+idf_component_register(SRCS "i2c_slave.c" "i2c_master.c" "motors.c" "bluetooth.c" "main.c" "ultrasonic.h" "ultrasonic.c" "Main.c"
+                    INCLUDE_DIRS ".")
