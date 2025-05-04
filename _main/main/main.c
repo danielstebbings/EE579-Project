@@ -89,7 +89,6 @@ void app_main(void) {
   setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1); //front
   //setupUltrasonic(ECHO_PIN_US2, TRIG_PIN_US2, 2);
   //setupUltrasonic(ECHO_PIN_US3, TRIG_PIN_US3, 3);
-  init_i2c_slave();
 
   esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -99,25 +98,27 @@ void app_main(void) {
     ESP_ERROR_CHECK(ret);
 
     //i2c error check
+    init_i2c_slave();
 
     //set default
     set_motor_speed(1500);
     set_servo_angle(90);
     set_steering_angle(90);
 
-    xTaskCreate(i2c_slave_task, "i2c_slave_task", 2048, NULL, 10, NULL);
 
+    uint8_t recv_date[256] = {0};
   while(1)
   {
     float distance_front = measure_distance(ECHO_PIN_US1);
     float distance_left;
     float distance_right;
 
-    ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance_front);
+    //ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance_front);
+    ESP_LOGI("TEST", "LOOP SUCCESS");
     
     //Recieve test data
-    //i2c_slave_test();
-
+    i2c_slave_read(recv_date, sizeof(recv_date));
+    
     vTaskDelay(pdMS_TO_TICKS(100));
   }
 }

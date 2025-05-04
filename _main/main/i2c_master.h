@@ -5,17 +5,15 @@
 *   FOR DANIELS SECONDARY ESP - SETUP AS MASTER
 */
 
-//#include "driver/i2c.h"       //legacy driver
-#include "driver/i2c_master.h"
+#include "driver/i2c.h"
 #include "esp_err.h"
 #include "esp_check.h"
 
 #define I2C_CLOCK 22
 #define I2C_DATA 21
 
-void init_i2c_master(void);
-i2c_master_bus_handle_t get_bus_handle(void);
-i2c_master_dev_handle_t get_dev_handle(void);
-void i2c_master_test(void);
+esp_err_t init_i2c_master(void);
+esp_err_t esp32_register_read(uint8_t reg_addr, uint8_t *data, size_t len);
+esp_err_t esp32_register_write(uint8_t reg_addr, uint8_t data);
 
 #endif //__I2C_MASTER_H__

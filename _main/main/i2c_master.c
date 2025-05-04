@@ -1,49 +1,39 @@
 #include "i2c_master.h"
 
-i2c_master_bus_handle_t bus_handle;
-i2c_master_dev_handle_t dev_handle;
+#define I2C_MASTER_NUM 0
+#define ESP_ADDR 0x58
+#define I2C_MASTER_TIMEOUT_MS 1000
 
-void init_i2c_master(void)
+//initialise master
+esp_err_t init_i2c_master(void)
 {
-    i2c_master_bus_config_t i2c_master_cfg = { //TODO: define the vars with 0.
-        .clk_source = I2C_CLK_SRC_DEFAULT,
-        .i2c_port = I2C_NUM_0,
-        .scl_io_num = I2C_CLOCK,    //clock
-        .sda_io_num = I2C_DATA,    //data
-        .glitch_ignore_cnt = 7,
-        .flags.enable_internal_pullup = true,
+    int i2c_master_port = I2C_MASTER_NUM;
+    i2c_config_t conf = {
+        .mode = I2C_MODE_MASTER,
+        .sda_io_num = I2C_DATA,
+        .scl_io_num = I2C_CLOCK,
+        .sda_pullup_en = GPIO_PULLUP_ENABLE,
+        .scl_pullup_en = GPIO_PULLUP_ENABLE,
+        .master.clk_speed = 400000
     };
+    i2c_param_config(i2c_master_port, &conf);
 
-    ESP_ERROR_CHECK(i2c_new_master_bus(&i2c_master_cfg, &bus_handle));
-
-
-    i2c_device_config_t dev_cfg = {
-        .dev_addr_length = I2C_ADDR_BIT_LEN_7,
-        .device_address = 0x58,
-        .scl_speed_hz = 100000,
-    };
-
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &dev_handle));
-
+    return i2c_driver_install(i2c_master_port, conf.mode,0,0,0);
 }
 
-i2c_master_bus_handle_t get_bus_handle(void)
+//read a sequency of bytes
+esp_err_t esp32_register_read(uint8_t reg_addr, uint8_t *data, size_t len)
 {
-    return bus_handle;
-}
-i2c_master_dev_handle_t get_dev_handle(void)
-{
-    return dev_handle;
+    return i2c_master_write_read_device(I2C_MASTER_NUM, ESP_ADDR, &reg_addr, 1, data, len, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
 }
 
-void i2c_master_test(void)
-{
-    uint8_t data[] = {'1', '2', '3'};
-    esp_err_t ret = i2c_master_transmit(dev_handle, data, sizeof(data), -1);
 
-    if(ret == ESP_OK) {
-        ESP_LOGI("I2C_MASTER", "Sent data: %s", data);
-    } else {
-        ESP_LOGE("I2C_MASTER", "Transmission failed: %s", esp_err_to_name(ret));
-    }
+esp_err_t esp32_register_write(uint8_t reg_addr, uint8_t data)
+{
+    int ret;
+    uint8_t write_buf[2] = {reg_addr, data};
+
+    ret = i2c_master_write_to_device(I2C_MASTER_NUM, ESP_ADDR, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+
+    return ret;
 }
