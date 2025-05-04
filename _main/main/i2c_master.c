@@ -1,9 +1,5 @@
 #include "i2c_master.h"
 
-#define I2C_MASTER_NUM 0
-#define ESP_ADDR 0x58
-#define I2C_MASTER_TIMEOUT_MS 1000
-
 //initialise master
 esp_err_t init_i2c_master(void)
 {
@@ -21,6 +17,7 @@ esp_err_t init_i2c_master(void)
     return i2c_driver_install(i2c_master_port, conf.mode,0,0,0);
 }
 
+static const char *TAG = "ESP_MASTER";
 //read a sequency of bytes
 esp_err_t esp32_register_read(uint8_t reg_addr, uint8_t *data, size_t len)
 {
@@ -34,6 +31,13 @@ esp_err_t esp32_register_write(uint8_t reg_addr, uint8_t data)
     uint8_t write_buf[2] = {reg_addr, data};
 
     ret = i2c_master_write_to_device(I2C_MASTER_NUM, ESP_ADDR, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
+
+    if (ret == ESP_OK)
+    {
+        ESP_LOGI(TAG, "Successfully wrote: %d to address: %d", data, reg_addr);
+    } else {
+        ESP_LOGE(TAG, "Failed to write data: %s ", esp_err_to_name(ret));
+    }
 
     return ret;
 }

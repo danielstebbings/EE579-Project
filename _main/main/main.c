@@ -11,7 +11,7 @@
 #include "ultrasonic.h"
 #include "motors.h"
 #include "bluetooth.h"
-#include "i2c_slave.h"
+#include "i2c_master.h"
 
 static const char* TAG_BT = "BLUETOOTH";
 // Bluetooth Event Handler
@@ -98,7 +98,9 @@ void app_main(void) {
     ESP_ERROR_CHECK(ret);
 
     //i2c error check
-    init_i2c_slave();
+    //init_i2c_slave();
+
+    init_i2c_master();
 
     //set default
     set_motor_speed(1500);
@@ -106,7 +108,7 @@ void app_main(void) {
     set_steering_angle(90);
 
 
-    uint8_t recv_date[256] = {0};
+    //uint8_t recv_date[256] = {0};
   while(1)
   {
     float distance_front = measure_distance(ECHO_PIN_US1);
@@ -117,7 +119,10 @@ void app_main(void) {
     ESP_LOGI("TEST", "LOOP SUCCESS");
     
     //Recieve test data
-    i2c_slave_read(recv_date, sizeof(recv_date));
+    //i2c_slave_read(recv_date, sizeof(recv_date));
+
+    //Write test data
+    esp32_register_write(ESP_ADDR, 42);
     
     vTaskDelay(pdMS_TO_TICKS(100));
   }

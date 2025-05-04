@@ -10,7 +10,7 @@
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32"
     },
-    "idf.portWin": "COM3",
+    "idf.portWin": "COM4",
     "files.associations": {
         "esp_bt_device.h": "c",
         "esp_err.h": "c",

@@ -1,6 +1,10 @@
 #ifndef __I2C_MASTER_H__
 #define __I2C_MASTER_H__
 
+#define I2C_MASTER_NUM 0
+#define ESP_ADDR 0x58
+#define I2C_MASTER_TIMEOUT_MS 1000
+
 /*
 *   FOR DANIELS SECONDARY ESP - SETUP AS MASTER
 */
