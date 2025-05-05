@@ -9,6 +9,8 @@
 #include "edge-impulse-sdk/classifier/ei_run_classifier.h"
 static const char *TAG = "cam_handling";
 
+uint8_t *snapshot_buf; // points to the output of the capture
+
 esp_err_t camera_init() {
     camera_config_t config;
 
@@ -52,7 +54,7 @@ esp_err_t camera_init() {
     return ESP_OK;
 };
 
-esp_err_t camera_capture(uint8_t *image_buffer) {
+esp_err_t camera_capture() {
 
     // acquire a frame
     camera_fb_t *fb = esp_camera_fb_get();
@@ -63,16 +65,16 @@ esp_err_t camera_capture(uint8_t *image_buffer) {
     // replace this with your own function
     // process_image(fb->width, fb->height, fb->format, fb->buf, fb->len);
 
-    image_buffer = (uint8_t *)malloc(EI_CAMERA_RAW_FRAME_BUFFER_COLS * EI_CAMERA_RAW_FRAME_BUFFER_ROWS * EI_CAMERA_FRAME_BYTE_SIZE);
-    bool converted = fmt2rgb888(fb->buf, fb->len, PIXFORMAT_JPEG, image_buffer);
+    snapshot_buf = (uint8_t *)malloc(EI_CAMERA_RAW_FRAME_BUFFER_COLS * EI_CAMERA_RAW_FRAME_BUFFER_ROWS * EI_CAMERA_FRAME_BYTE_SIZE);
+    bool converted = fmt2rgb888(fb->buf, fb->len, PIXFORMAT_JPEG, snapshot_buf);
     // return the frame buffer back to the driver for reuse
     esp_camera_fb_return(fb);
     
     ei::image::processing::resize_image_using_mode(
-            image_buffer,
+            snapshot_buf,
             EI_CAMERA_RAW_FRAME_BUFFER_COLS,
             EI_CAMERA_RAW_FRAME_BUFFER_ROWS,
-            image_buffer,
+            snapshot_buf,
             EI_CLASSIFIER_INPUT_WIDTH,
             EI_CLASSIFIER_INPUT_HEIGHT,
             3, // 3 Bytes per pixel
@@ -115,7 +117,7 @@ EI_IMPULSE_ERROR run_model(const ei_impulse_t* impulse, signal_t* image, ei_impu
 
 EI_IMPULSE_ERROR detect(ei_impulse_result_t* result) {
     // Take photo
-    esp_err_t cap_error = camera_capture(snapshot_buf);
+    esp_err_t cap_error = camera_capture();
     if (cap_error != ESP_OK) {
         //ESP_LOGE(TAG,"Capture Failed");
         return EI_IMPULSE_DSP_ERROR;

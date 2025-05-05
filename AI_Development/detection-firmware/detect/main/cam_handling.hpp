@@ -23,7 +23,7 @@
 #define PCLK_GPIO_NUM 13
 
 #define LED_GPIO_NUM 21
-uint8_t *snapshot_buf; // points to the output of the capture
+
 
 #define EI_CAMERA_RAW_FRAME_BUFFER_COLS 320
 #define EI_CAMERA_RAW_FRAME_BUFFER_ROWS 240
@@ -33,7 +33,7 @@ const ei_impulse_t impulse          = impulse_640180_0;
 ei_impulse_handle_t impulse_handle  = impulse_handle_640180_0;
 
 esp_err_t camera_init();
-esp_err_t camera_capture(uint8_t *snapshot_buf);
+esp_err_t camera_capture();
 
 int feature_get_data(size_t offset, size_t length, uint8_t* out_ptr);
 
