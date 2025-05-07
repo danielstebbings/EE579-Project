@@ -137,11 +137,11 @@ class ESP_YOLO(YOLO):
         )
 
 
-model = ESP_YOLO("./cancar_yolov11_320_25epochs.pt")
+model = ESP_YOLO("./cancar_yolov11_240_25epoch.pt")
 for m in model.modules():
     if isinstance(m, Attention):
         m.forward = ESP_Attention.forward.__get__(m)
     if isinstance(m, Detect):
         m.forward = ESP_Detect.forward.__get__(m)
 
-model.export(format="onnx", simplify=True, opset=13, dynamic=False, imgsz=320)
+model.export(format="onnx", simplify=True, opset=13, dynamic=False, imgsz=240)

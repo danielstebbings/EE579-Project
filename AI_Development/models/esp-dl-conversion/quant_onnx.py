@@ -13,12 +13,15 @@ import zipfile
 import urllib.request
 from tqdm import tqdm
 
+sizex = 480
+sizey = 320
+
 class CaliDataset(Dataset):
     def __init__(self, path, size):
         self.size = size
         self.transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Resize((self.size, self.size)),
+            transforms.Resize((sizex, sizey)),
             transforms.Normalize(mean=[0, 0, 0], std=[1, 1, 1]),
         ])
         self.imgs_path = [os.path.join(path, img_name) for img_name in os.listdir(path)]
@@ -43,14 +46,14 @@ def resize_images(source_dir, dest_dir, target_size):
         dst_path = os.path.join(dest_dir, filename)
         try:
             img = Image.open(src_path).convert("RGB")
-            img = img.resize((target_size, target_size))
+            img = img.resize((sizex, sizey))
             img.save(dst_path)
         except Exception as e:
             print(f"Error with {filename}: {e}")
 
 def quant_yolo11n(onnx_path, espdl_path, size):
     BATCH_SIZE = 1
-    INPUT_SHAPE = [3, size, size]
+    INPUT_SHAPE = [3, sizex, sizey]
     DEVICE = "cpu"
     TARGET = "esp32s3"
     NUM_OF_BITS = 8

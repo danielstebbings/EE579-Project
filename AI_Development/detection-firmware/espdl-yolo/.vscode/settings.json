@@ -3,5 +3,21 @@
     "idf.toolsPath": "/home/daniel/.espressif",
     "idf.pythonInstallPath": "/usr/bin/python3",
     "idf.port": "/dev/ttyACM0",
-    "idf.flashType": "UART"
+    "idf.flashType": "UART",
+    "files.associations": {
+        "array": "cpp",
+        "cwchar": "cpp",
+        "list": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "functional": "cpp",
+        "initializer_list": "cpp",
+        "iosfwd": "cpp",
+        "istream": "cpp",
+        "new": "cpp",
+        "ostream": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "cstdint": "cpp"
+    }
 }

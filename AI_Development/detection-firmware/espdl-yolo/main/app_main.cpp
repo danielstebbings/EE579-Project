@@ -2,37 +2,72 @@
 #include "esp_log.h"
 #include "bsp/esp-bsp.h"
 
+#include "run_model.hpp"
+
 extern const uint8_t bus_jpg_start[] asm("_binary_bus_jpg_start");
 extern const uint8_t bus_jpg_end[] asm("_binary_bus_jpg_end");
-const char *TAG = "yolo11n";
+static const char *TAG = "yolo11n";
 
-extern "C" void app_main(void)
-{
 
-    dl::image::jpeg_img_t jpeg_img = {
-        .data = (uint8_t *)bus_jpg_start,
-        .width = 320,
-        .height = 320,
-        .data_size = (uint32_t)(bus_jpg_end - bus_jpg_start),
-    };
+
+void check_psram_status() {
+    size_t total_psram = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
+    size_t free_psram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
+    size_t largest_block = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+
+    ESP_LOGI("PSRAM", "Total PSRAM: %d bytes", total_psram);
+    ESP_LOGI("PSRAM", "Free PSRAM: %d bytes", free_psram);
+    ESP_LOGI("PSRAM", "Largest Free Block: %d bytes", largest_block);
+}
+extern "C" void app_main(void) {
+    check_psram_status();
+    ESP_LOGI(TAG, "app_main");
+    COCODetect* detect = new COCODetect();
     dl::image::img_t img;
-    img.pix_type = dl::image::DL_IMAGE_PIX_TYPE_RGB888;
-    sw_decode_jpeg(jpeg_img, img, true);
-    ESP_LOGI(TAG, "Decoded image");
+    uint8_t *resized_buf = (uint8_t *)malloc(MODEL_WIDTH * MODEL_HEIGHT * CAM_PIX_BYTES);
 
-    COCODetect *detect = new COCODetect();
-    auto &detect_results = detect->run(img);
-    ESP_LOGI(TAG, "Finished Inference");
-    for (const auto &res : detect_results) {
-        ESP_LOGI(TAG,
-                 "[category: %d, score: %f, x1: %d, y1: %d, x2: %d, y2: %d]",
-                 res.category,
-                 res.score,
-                 res.box[0],
-                 res.box[1],
-                 res.box[2],
-                 res.box[3]);
+    /*
+    ESP_LOGI(TAG, "Decoding Hardcoded Image");
+    decode_harcoded_jpeg(bus_jpg_start, bus_jpg_end, img);
+    run_model(detect, img);
+    check_psram_status(); */
+
+    ESP_LOGI(TAG, "Decoding Camera Output");
+    camera_init();
+    while(true) {
+        check_psram_status();
+        if (camera_capture(img) != ESP_OK) {
+            ESP_LOGW(TAG, "Camera Capture Failed: Skipping Inference");
+        } else {
+            ESP_LOGI(TAG, "Successful Capture");
+            if(MODEL_WIDTH != CAM_WIDTH || MODEL_HEIGHT != CAM_HEIGHT) {
+                ESP_LOGI(TAG, "Resizing");
+                dl::image::img_t res_img;
+                res_img.data        = resized_buf;
+                res_img.width       = MODEL_WIDTH;
+                res_img.height      = MODEL_HEIGHT;
+                res_img.pix_type    = dl::image::DL_IMAGE_PIX_TYPE_RGB888;
+
+                dl::image::resize(
+                    img,
+                    res_img,
+                    dl::image::DL_IMAGE_INTERPOLATE_BILINEAR,  // or DL_IMAGE_INTERPOLATE_NEAREST
+                    0,              // caps: 0 if you don’t need RGB/BGR swap
+                    nullptr,        // norm_lut: optional normalization
+                    {}              // crop_area: empty = full image
+                );
+
+                run_model(detect, res_img);
+            } else {
+                check_psram_status();
+            run_model(detect, img);
+            }
+            
+        }
+        
     }
-    delete detect;
-    heap_caps_free(img.data);
+
+    
+    return;
+
 }
