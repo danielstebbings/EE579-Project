@@ -27,6 +27,8 @@ esp_err_t init_i2c_slave(void)
 }
 
 //read data from the master
+
+//TODO: WHEN DISCONNECTED - STILL HAS A SUCCESSFULL READ.
 esp_err_t i2c_slave_read(uint8_t *data, size_t len)
 {
     uint32_t startMs = esp_timer_get_time() / 1000;

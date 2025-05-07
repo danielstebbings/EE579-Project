@@ -109,12 +109,12 @@ void app_main(void) {
     set_steering_angle(90);
 
 
-    uint8_t recv_date[256] = {0};
+    uint8_t recv_date[2] = {0};
   while(1)
   {
     float distance_front = measure_distance(ECHO_PIN_US1);
-    float distance_left;
-    float distance_right;
+    float distance_left = measure_distance(ECHO_PIN_US2);
+    float distance_right = measure_distance(ECHO_PIN_US3);
 
     //ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance_front);
     ESP_LOGI("TEST", "LOOP SUCCESS");
@@ -125,6 +125,6 @@ void app_main(void) {
     //Write test data
     //esp32_register_write(ESP_ADDR, 0b10101010);
     
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(500)); //TODO: ALTER VALUE.
   }
 }
