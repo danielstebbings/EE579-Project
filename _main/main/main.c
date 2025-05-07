@@ -1,4 +1,8 @@
-//#include <Arduino.h>
+/*
+*   main.c
+*   ESP32_MASTER PINOUT
+*   
+*/
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -7,6 +11,7 @@
 #include "ultrasonic.h"
 #include "motors.h"
 #include "bluetooth.h"
+#include "i2c_master.h"
 
 static const char* TAG_BT = "BLUETOOTH";
 // Bluetooth Event Handler
@@ -71,15 +76,19 @@ void bluetooth_init()
 }
 
 
+//TODO: Setup freeRTOS tasks.
+
+
+
 static const char *TAG_US = "ULTRASONIC";
 
 void app_main(void) { 
   
   bluetooth_init();
-
   setupMotors();
-
-  setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1);
+  setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1); //front
+  //setupUltrasonic(ECHO_PIN_US2, TRIG_PIN_US2, 2);
+  //setupUltrasonic(ECHO_PIN_US3, TRIG_PIN_US3, 3);
 
   esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -88,12 +97,33 @@ void app_main(void) {
     }
     ESP_ERROR_CHECK(ret);
 
+    //i2c error check
+    //init_i2c_slave();
+
+    init_i2c_master();
+
+    //set default
+    set_motor_speed(1500);
+    set_servo_angle(90);
+    set_steering_angle(90);
+
+
+    //uint8_t recv_date[256] = {0};
   while(1)
   {
-    float distance = measure_distance(ECHO_PIN_US1);
+    float distance_front = measure_distance(ECHO_PIN_US1);
+    float distance_left;
+    float distance_right;
 
-    ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance);
+    //ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance_front);
+    ESP_LOGI("TEST", "LOOP SUCCESS");
     
-    vTaskDelay(pdMS_TO_TICKS(10));
+    //Recieve test data
+    //i2c_slave_read(recv_date, sizeof(recv_date));
+
+    //Write test data
+    esp32_register_write(ESP_ADDR, 42);
+    
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
