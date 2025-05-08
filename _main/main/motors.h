@@ -26,6 +26,8 @@
 
 void setupMotors();
 void set_motor_speed(uint32_t speed_us);
+bool get_motor_speed();
+void set_motor_reverse(uint32_t speed_us);
 void set_servo_angle(int angle);
 void magnet_on();
 void magnet_off();

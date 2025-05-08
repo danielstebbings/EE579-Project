@@ -14,8 +14,17 @@
 #include "i2c_master.h"
 #include "i2c_slave.h"
 
+#define DISTANCE_THRESHOLD 30
+#define MOTOR_05_M 150               //in ms TODO: TEST AND MODIFY
+#define FWD_FAST 1650
+#define FWD_SLOW 1570
+#define MOTOR_NUETRAL 1500
+#define IDENTIFY_TIMEOUT 1337
+
+
 static const char* TAG_BT = "BLUETOOTH";
 // Bluetooth Event Handler
+bool start_sequence = false;
 void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
     switch (event)
@@ -40,6 +49,17 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         else if (strcmp((char *)param->data_ind.data, "off") == 0)
         {
             magnet_off();
+        }
+        else if (strcmp((char *)param->data_ind.data, "start") == 0)
+        {
+            //start the drive sequence
+            start_sequence = false;
+
+        }
+        else if (strcmp((char *)param->data_ind.data, "stop") == 1)
+        {
+            //stop the drive sequence
+            start_sequence = true;
         }
         else if (strstr((char *)param->data_ind.data, "angle:") != NULL)
         {
@@ -77,21 +97,18 @@ void bluetooth_init()
 }
 
 
-//TODO: Setup freeRTOS tasks.
-
-
-
 static const char *TAG_US = "ULTRASONIC";
 
 void app_main(void) { 
-  
-  bluetooth_init();
-  setupMotors();
-  setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1); //front
-  //setupUltrasonic(ECHO_PIN_US2, TRIG_PIN_US2, 2);
-  //setupUltrasonic(ECHO_PIN_US3, TRIG_PIN_US3, 3);
 
-  esp_err_t ret = nvs_flash_init();
+  
+    bluetooth_init();
+    setupMotors();
+    setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1); //front
+    setupUltrasonic(ECHO_PIN_US2, TRIG_PIN_US2, 2);
+    setupUltrasonic(ECHO_PIN_US3, TRIG_PIN_US3, 3);
+
+    esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
@@ -101,31 +118,216 @@ void app_main(void) {
     //i2c error check
     init_i2c_slave();
 
-    //init_i2c_master();    //--disabled on slave
-
-    //set default
-    set_motor_speed(1500);
-    set_servo_angle(90);
+    //set default   --TODO: DOUBLE CHECK ON TEST
+    set_motor_speed(0);
+    set_servo_angle(0);
     set_steering_angle(90);
 
+    enum State {
+        START,
+        APPROACH,
+        APPROACH_LOOK,
+        APPROACH_IDENTIFIED,
+        SEARCH_LOOK,
+        SEARCH_MOVE,
+        LOST,
+        LOST_MOVE,
+        LOST_SEARCH,
+        COLLECT_MOVE,
+        COLLECT_WAIT,
+        FINISH_MOVE,
+        FINISH_WAIT
+    };
+    enum State current_state = START;
+    int n_inferences = 0;
 
-    uint8_t recv_date[4] = {0};
-    uint8_t send_data[3] = {0x01, 0x02, 0x03, 0x04};
-  while(1)
-  {
-    float distance_front = measure_distance(ECHO_PIN_US1);
+    float distance_front[4];
+
+    while(1) {
+
+    for (int j = 0; j <= 4; j++)
+    {
+        //fill buffer
+        distance_front[j] = measure_distance(ECHO_PIN_US1);
+        if (j == 4)
+        {
+            j = 0;
+        }
+        
+    }
+    
     float distance_left = measure_distance(ECHO_PIN_US2);
     float distance_right = measure_distance(ECHO_PIN_US3);
 
-    //ESP_LOGI(TAG_US, "Distance measured by ultrasonic : %f", distance_front);
-    ESP_LOGI("DEBUG", "LOOP SUCCESS");
-    
-    //Recieve test data
+    /*
+    CONTROL LOGIC
+
+    scan left and right -- try ignore which side the opposition car is at
+    -- if big jump can ignore - end of lockers
+    -- if we are stationary and the distance changes on a side - then that is the car.
+
+    camera for directional front servo control
+    -- send left half and send right half (0 - 255)
+
+    combine this data with ultrasonic data to determine how large of an angle is required
+    --smaller angle at longer distance 
+
+    01 - where are we
+    02 - wait for begin -- bluetooth
+    03 - approach the can -- drive forwards 0.5
+    04 - stop at X distance and look at front ultrasonic and camera
+    05 - if no object go back to 4
+    06 - else approach the can
+    */
+
+    //Recieve camera data
+    uint8_t recv_date[4] = {0};
     i2c_slave_read(recv_date, sizeof(recv_date));
 
-    //Write test data
-    //esp32_register_write(ESP_ADDR, send_data, sizeof(send_data));
+    uint8_t camera_header = recv_date[0];
+    uint8_t camera_angle_1 = recv_date[1];
+    uint8_t camera_angle_2 = recv_date[2];
+    uint8_t camera_angle_3 = recv_date[3];
+
+    //split camera header
+    /*
+    bit 0-3 - how many objects detected 
+    bit 4-7 - 0 for left, 1 for right - the bit that it is in will be what objects its for
+    */
+
+    uint8_t n = camera_header && 0x0F;
+    uint8_t l1 = (camera_header && BIT4) >> 4;
+    uint8_t l2 = (camera_header && BIT5) >> 4;
+    uint8_t l3 = (camera_header && BIT6) >> 4;
     
-    vTaskDelay(pdMS_TO_TICKS(500)); //TODO: ALTER VALUE.
-  }
+    /* 
+        from Daniels camera - uint8_t
+        byte[0] - address
+        byte[1] - [0-2 how many objects][]
+        byte[2] - 0-255 of can centre point - where 0 is the centre point 255 is far to the side
+    */
+
+
+    static const char *TAG_R = "Running";
+    switch (current_state)
+    {
+    case START:
+        ESP_LOGI(TAG_R, "STATE: START");
+        if(start_sequence) {
+            current_state = APPROACH;
+        }
+        break;
+
+    case APPROACH:
+        ESP_LOGI(TAG_R, "STATE: APPROACH");
+        //drive ~0.5m then stop
+        uint32_t start_time = esp_timer_get_time();
+        set_motor_speed(FWD_SLOW);
+        if (((esp_timer_get_time() - start_time) / 1000) > MOTOR_05_M) {
+            set_motor_speed(MOTOR_NUETRAL);
+        }
+
+        current_state = APPROACH_LOOK;
+        break;  
+
+    case APPROACH_LOOK:
+        ESP_LOGI(TAG_R, "STATE: APPROACH_LOOK");
+        //detect what object we want to track onto
+        n_inferences++;     //count how many inferences we look at
+        start_time = esp_timer_get_time();  //count how much time
+
+        for(int j = 0; j <= sizeof(distance_front); j++)
+        {
+            int distance_front_avg = distance_front[j] / 4;
+
+            //if avg distance buffer < threshold or camera detect go to approach
+            if(distance_front_avg <= DISTANCE_THRESHOLD || n > 0)   //TODO: will need tidy up on n>0
+            {
+                //SOMETHING THERE
+                current_state = APPROACH_IDENTIFIED;
+            }
+        }
+        //if been in state for too long - time or inference -- go to search look
+        if(((esp_timer_get_time() - start_time) / 1000) > IDENTIFY_TIMEOUT)
+        {
+            current_state = SEARCH_LOOK;
+        }
+        
+        break;
+
+    case APPROACH_IDENTIFIED:
+        ESP_LOGI(TAG_R, "STATE: APPROACH_IDENTIFIED");
+        //drive towards can
+        for ()
+        {
+            /* code */
+        }
+        
+        //once under threshold distance - move to collect move
+        break;
+
+    case SEARCH_LOOK:
+        ESP_LOGI(TAG_R, "STATE: SEARCH_LOOK");
+        //like approach look except we keep track how long we are here
+        //if we been in too many times - go to lost move
+        //goes to search move if does not find
+        break;
+
+    case SEARCH_MOVE:
+        ESP_LOGI(TAG_R, "STATE: SEARCH_MOVE");
+        //drive forward x amount ~ 1m
+        start_time = esp_timer_get_time();
+        set_motor_speed(FWD_SLOW);
+        if (((esp_timer_get_time() - start_time) / 1000) > 2*MOTOR_05_M) {
+            set_motor_speed(MOTOR_NUETRAL);
+        }
+
+        //hit a threshold for ultrasonic or stop after predetermined time
+        //go back to search look
+        break;
+
+    case LOST_MOVE:
+        ESP_LOGI(TAG_R, "STATE: LOST_MOVE");
+        //Drive backwards
+        start_time = esp_timer_get_time();
+        set_motor_reverse(MOTOR_NUETRAL);
+        if (((esp_timer_get_time() - start_time) / 1000) > 4*MOTOR_05_M) {
+            set_motor_speed(MOTOR_NUETRAL);
+        }
+        break;
+
+    case LOST_SEARCH:
+        ESP_LOGI(TAG_R, "STATE: LOST_SEARCH");
+        //like search look except we go backwards
+        break;
+    
+    case COLLECT_MOVE:
+        ESP_LOGI(TAG_R, "STATE: COLLECT_MOVE");
+        //position magnet over the can
+        break;
+
+    case COLLECT_WAIT:
+        ESP_LOGI(TAG_R, "STATE: COLLECT_WAIT");
+        //wait until bluetooth signal cmd done - then finish move
+        break;
+
+    case FINISH_MOVE:
+        ESP_LOGI(TAG_R, "STATE: FINISH_MOVE");
+        //floor it backwards
+        break;
+
+    case FINISH_WAIT:
+        ESP_LOGI(TAG_R, "STATE: FINISH_WAIT");
+        //park it
+        break;
+    
+    default:
+        ESP_LOGI(TAG_R, "STATE: DEFAULT - GOING TO START");
+        current_state = START;
+        break;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(1000)); //TODO: ALTER VALUE.
+    }
 }
+

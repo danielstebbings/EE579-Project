@@ -2,7 +2,7 @@
 
 #define I2C_SLAVE_NUM 0
 #define ESP_ADDR 0x58
-#define I2C_SLAVE_TIMEOUT_MS 500
+#define I2C_SLAVE_TIMEOUT_MS 100
 #define I2C_RX_BUF_LEN 256
 #define I2C_TX_BUF_LEN 256
 
@@ -42,8 +42,7 @@ esp_err_t i2c_slave_read(uint8_t *data, size_t len)
 
         for(int i = 0; i < bytes_read; i++) {
             //ESP_LOGI(TAG, "I2C_SLAVE_READ_BUFFER: %u", *data);
-            uint8_t value_data = data[i];   //store value
-            ESP_LOGI(TAG, "Byte %d: 0x%02x (%c)", i, data[i], isprint(data[i]));
+            //ESP_LOGI(TAG, "Byte %d: 0x%02x (%c)", i, data[i], isprint(data[i]));
         }
         return ESP_OK;
     } else {

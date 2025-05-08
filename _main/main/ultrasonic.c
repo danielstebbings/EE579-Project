@@ -1,7 +1,7 @@
 #include "esp_log.h"
 #include "ultrasonic.h"
 
-#define ECHO_TIMEOUT 10000  //10ms timeout.
+#define ECHO_TIMEOUT 1000  //1s timeout.
 
 void setupUltrasonic(int ECHO_PIN, int TRIG_PIN, int CHANNEL)
 {

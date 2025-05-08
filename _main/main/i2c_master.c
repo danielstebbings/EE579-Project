@@ -34,7 +34,7 @@ esp_err_t esp32_register_write(uint8_t reg_addr, uint8_t *data, size_t len)
 
     uint8_t write_buf[len + 1];
 
-    write_buf[0] = reg_addr;
+    //write_buf[0] = reg_addr;
     memcpy(write_buf + 1, data, len);
 
     ret = i2c_master_write_to_device(I2C_MASTER_NUM, ESP_ADDR, write_buf, sizeof(write_buf), I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);

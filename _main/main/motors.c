@@ -59,6 +59,25 @@ void set_motor_speed(uint32_t speed_us)
     ESP_LOGI("MOTORS", "Set motors to %lu duty", duty);
 }
 
+void set_motor_reverse(uint32_t speed_us)
+{
+    
+}
+
+bool get_motors_speed()
+{
+    uint32_t duty = ledc_get_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+
+    if(duty != 0)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
 // Set servo angle (0-180 degrees)
 void set_servo_angle(int angle)
 {
