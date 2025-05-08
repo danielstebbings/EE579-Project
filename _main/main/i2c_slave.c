@@ -42,10 +42,7 @@ esp_err_t i2c_slave_read(uint8_t *data, size_t len)
 
         for(int i = 0; i < bytes_read; i++) {
             //ESP_LOGI(TAG, "I2C_SLAVE_READ_BUFFER: %u", *data);
-            if(i % 2 == 0)
-            {
-                uint8_t value_data = data[i];   //store value
-            }
+            uint8_t value_data = data[i];   //store value
             ESP_LOGI(TAG, "Byte %d: 0x%02x (%c)", i, data[i], isprint(data[i]));
         }
         return ESP_OK;
