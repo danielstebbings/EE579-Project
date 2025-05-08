@@ -10,8 +10,9 @@
 #include "esp_err.h"
 #include "esp_check.h"
 #include "esp_timer.h"
+#include <ctype.h>
 
-#define I2C_CLOCK 22
+    #define I2C_CLOCK 22
 #define I2C_DATA 21
 
 esp_err_t init_i2c_slave(void);

@@ -2,7 +2,7 @@
 
 #define I2C_SLAVE_NUM 0
 #define ESP_ADDR 0x58
-#define I2C_SLAVE_TIMEOUT_MS 50
+#define I2C_SLAVE_TIMEOUT_MS 500
 #define I2C_RX_BUF_LEN 256
 #define I2C_TX_BUF_LEN 256
 
@@ -27,14 +27,27 @@ esp_err_t init_i2c_slave(void)
 }
 
 //read data from the master
+
+//TODO: WHEN DISCONNECTED - STILL HAS A SUCCESSFULL READ.
 esp_err_t i2c_slave_read(uint8_t *data, size_t len)
 {
     uint32_t startMs = esp_timer_get_time() / 1000;
     int bytes_read = i2c_slave_read_buffer(I2C_SLAVE_NUM, data, len, I2C_SLAVE_TIMEOUT_MS / portTICK_PERIOD_MS);
     uint32_t stopMs = esp_timer_get_time() / 1000;
+
+    uint8_t value_data[bytes_read]; //store value
     if (bytes_read > 0)
     {
         ESP_LOGI(TAG, "Read %d bytes from master", bytes_read);
+
+        for(int i = 0; i < bytes_read; i++) {
+            //ESP_LOGI(TAG, "I2C_SLAVE_READ_BUFFER: %u", *data);
+            if(i % 2 == 0)
+            {
+                uint8_t value_data = data[i];   //store value
+            }
+            ESP_LOGI(TAG, "Byte %d: 0x%02x (%c)", i, data[i], isprint(data[i]));
+        }
         return ESP_OK;
     } else {
         ESP_LOGW(TAG, "Nothing recieved len: %d, waited: %lu ms",bytes_read, stopMs - startMs);

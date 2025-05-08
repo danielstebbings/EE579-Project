@@ -55,6 +55,8 @@ void set_motor_speed(uint32_t speed_us)
     uint32_t duty = (speed_us * (1 << 13)) / 20000;
     ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, duty);
     ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+
+    ESP_LOGI("MOTORS", "Set motors to %lu duty", duty);
 }
 
 // Set servo angle (0-180 degrees)
@@ -66,6 +68,8 @@ void set_servo_angle(int angle)
     uint32_t duty = (us * (1 << 13)) / 20000;
     ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1, duty);
     ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_1);
+    
+    ESP_LOGI(TAG, "Set servo to %lu duty", duty);
 }
 
 // Control magnet

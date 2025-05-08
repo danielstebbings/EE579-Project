@@ -1,2 +1,4 @@
-idf_component_register(SRCS "i2c_master.c" "i2c_slave.c" "motors.c" "bluetooth.c" "main.c" "ultrasonic.h" "ultrasonic.c" "Main.c"
-                    INCLUDE_DIRS ".")
+set(src_dirs        ./)
+
+set(include_dirs    ./)
+idf_component_register(SRC_DIRS ${src_dirs} INCLUDE_DIRS ${include_dirs})
