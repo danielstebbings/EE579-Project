@@ -29735,7 +29735,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PCM_JLCPCB:R_0805"
+		(property "Footprint" "PCM_JLCPCB:R_1206"
 			(at 192.532 87.63 90)
 			(effects
 				(font
@@ -30463,7 +30463,7 @@
 				)
 			)
 		)
-		(property "Footprint" "PCM_JLCPCB:R_0805"
+		(property "Footprint" "PCM_JLCPCB:R_1206"
 			(at 202.692 87.63 90)
 			(effects
 				(font
@@ -30686,7 +30686,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PCM_JLCPCB:C_0805"
+		(property "Footprint" "Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P2.50mm"
 			(at 106.172 78.74 90)
 			(effects
 				(font
