@@ -3,6 +3,7 @@
 #include "esp_camera.h"
 #include "esp_log.h"
 #include "esp_err.h"
+#include "esp_log_timestamp.h"
 
 static const char *TAG = "cam_handling";
 uint8_t *snapshot_buf = (uint8_t *)malloc(CAM_WIDTH * CAM_HEIGHT * CAM_PIX_BYTES); // points to the output of the capture
@@ -35,7 +36,7 @@ esp_err_t camera_init() {
     config.ledc_channel = LEDC_CHANNEL_0;
 
     config.pixel_format = PIXFORMAT_JPEG; // YUV422;GRAYSCALE;RGB565;JPEG
-    config.frame_size = FRAMESIZE_320X320;   // QQVGA-UXGA Do not use sizes above QVGA when not JPEG
+    config.frame_size = FRAMESIZE_VGA;   // QQVGA-UXGA Do not use sizes above QVGA when not JPEG
 
     config.jpeg_quality = 10; // 0-63 lower number means higher quality
     config.fb_count = 2;      // if more than one; i2s runs in continuous modeconfig. Use only with JPEG
@@ -89,11 +90,24 @@ esp_err_t decode_harcoded_jpeg(const uint8_t* jpg_start, const uint8_t* jpg_end,
     return ESP_OK;
 };
 
-esp_err_t run_model(COCODetect* detect, dl::image::img_t img) {
+esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img) {
     ESP_LOGI(TAG, "Starting Inference");
-    auto &detect_results = detect->run(img);
-    ESP_LOGI(TAG, "Finished Inference");
-    for (const auto &res : detect_results) {
+    uint32_t inference_start = esp_log_timestamp(); // returns ms
+    std::list<dl::detect::result_t> &detect_results = detect->run(img);
+    int32_t inference_end = esp_log_timestamp(); // returns ms
+    ESP_LOGI(TAG, "Finished Inference After %d ms", inference_end - inference_start);
+
+    // Store best classification
+    dl::detect::result_t best_can;
+    best_can.score = 0.0;
+    best_can.category = -1; // To detect if unclassified
+    dl::detect::result_t best_car;
+    best_car.score = 0.0;
+    best_car.category = -1; // To detect if unclassified
+
+
+
+    for (const dl::detect::result_t &res : detect_results) {
         ESP_LOGI(TAG,
                  "[category: %d, score: %f, x1: %d, y1: %d, x2: %d, y2: %d]",
                  res.category,
@@ -102,11 +116,31 @@ esp_err_t run_model(COCODetect* detect, dl::image::img_t img) {
                  res.box[1],
                  res.box[2],
                  res.box[3]);
+        // Keep track of highest score for Can and car
+
+        if (res.category == CATEGORY_CAN) {
+            if (res.score > best_can.score) {
+                ESP_LOGI(TAG, "New Best Can");
+                best_can = res;
+            }
+        } else if (res.category == CATEGORY_CAR) {
+            if (res.score > best_car.score) {
+                ESP_LOGI(TAG, "New Best Car");
+                best_car = res;
+            };
+        } else {
+            ESP_LOGE(TAG, "UNEXPECTED CATEGORY PREDICTED");
+        };
+
     };
+
+    // Now to get the highest
 
     return ESP_OK;
 };
 
+
+/*
 esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath) {
     jpeg_enc_cfg_t jpeg_cfg = {
         .width      = img.width,
@@ -157,3 +191,4 @@ esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath) {
     return ESP_OK;
 
 }
+    */

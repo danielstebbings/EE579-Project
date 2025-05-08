@@ -1,0 +1,51 @@
+menu "models: can_detect"
+    config FLASH_ESPDET_PICO_416_416_CAN
+        bool "flash espdet_pico_416_416_can"
+        depends on !CAT_DETECT_MODEL_IN_SDCARD
+        default y
+
+
+    choice
+        prompt "default"
+        default ESPDET_PICO_416_416_CAN
+        help
+            default can_detect model
+        config ESPDET_PICO_416_416_CAN
+            bool "espdet_pico_416_416_can"
+            depends on ESPDET_DETECT_MODEL_IN_SDCARD || FLASH_ESPDET_PICO_416_416_CAN
+    endchoice
+
+
+    config DEFAULT_ESPDET_DETECT_MODEL_TYPE
+        int
+        default 0 if ESPDET_PICO_416_416_CAN
+
+    choice
+        prompt "model location"
+        default ESPDET_DETECT_MODEL_IN_FLASH_RODATA
+        help
+            espdet_detect model location
+        config ESPDET_DETECT_MODEL_IN_FLASH_RODATA
+            bool "flash_rodata"
+        config ESPDET_DETECT_MODEL_IN_FLASH_PARTITION
+            bool "flash_partition"
+        config ESPDET_DETECT_MODEL_IN_SDCARD
+            bool "sdcard"
+            select ESPDET_PICO_416_416_CAN
+            select ESPDET_PICO_416_416_CAN
+    endchoice
+
+    config ESPDET_DETECT_MODEL_LOCATION
+        int
+        default 0 if ESPDET_DETECT_MODEL_IN_FLASH_RODATA
+        default 1 if ESPDET_DETECT_MODEL_IN_FLASH_PARTITION
+        default 2 if ESPDET_DETECT_MODEL_IN_SDCARD
+
+    config ESPDET_DETECT_MODEL_SDCARD_DIR
+        string "espdet_detect model sdcard dir"
+        default "models/s3" if IDF_TARGET_ESP32S3
+        default "models/p4" if IDF_TARGET_ESP32P4
+        depends on ESPDET_DETECT_MODEL_IN_SDCARD
+        help
+            Directory of models relative to sdcard mount point.
+endmenu

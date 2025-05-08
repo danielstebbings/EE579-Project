@@ -1,8 +1,5 @@
 ## IDF Component Manager Manifest File
 dependencies:
-  espressif/coco_detect:
-    version: ^0.1.0
-    override_path: ../dependencies/coco_detect
   espressif/esp32_p4_function_ev_board_noglib:
     version: ^4.0.1
     rules:
@@ -12,3 +9,6 @@ dependencies:
     rules:
     - if: target == esp32s3
   espressif/esp_jpeg: '*'
+  espressif/can_detect:
+    version: "^0.1.0"
+    override_path: "../dependencies/can_detect"

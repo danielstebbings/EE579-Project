@@ -1,23 +1,7 @@
 {
-    "idf.espIdfPath": "/home/daniel/esp/esp-idf",
-    "idf.toolsPath": "/home/daniel/.espressif",
-    "idf.pythonInstallPath": "/usr/bin/python3",
-    "idf.port": "/dev/ttyACM0",
     "idf.flashType": "UART",
-    "files.associations": {
-        "array": "cpp",
-        "cwchar": "cpp",
-        "list": "cpp",
-        "unordered_map": "cpp",
-        "vector": "cpp",
-        "functional": "cpp",
-        "initializer_list": "cpp",
-        "iosfwd": "cpp",
-        "istream": "cpp",
-        "new": "cpp",
-        "ostream": "cpp",
-        "tuple": "cpp",
-        "type_traits": "cpp",
-        "cstdint": "cpp"
-    }
+    "idf.port": "/dev/ttyACM0",
+    "idf.espIdfPath": "/home/daniel/esp/v5.4.1/esp-idf",
+    "idf.toolsPath": "/home/daniel/.espressif",
+    "idf.pythonInstallPath": "/usr/local/bin/python"
 }

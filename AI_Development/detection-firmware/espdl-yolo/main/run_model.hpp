@@ -1,4 +1,4 @@
-#include "coco_detect.hpp"
+#include "espdet_detect.hpp"
 #include "esp_log.h"
 #include "bsp/esp-bsp.h"
 
@@ -24,23 +24,29 @@
 
 #define LED_GPIO_NUM 21
 
-#define CAM_WIDTH       480
-#define CAM_HEIGHT      320 
+// Image dimensions
+#define CAM_WIDTH       640
+#define CAM_HEIGHT      480 
 #define CAM_PIX_BYTES     3 // 3 Bytes / pixel, RGB888
 
-#define MODEL_WIDTH       320
-#define MODEL_HEIGHT      320 
+#define MODEL_WIDTH       416
+#define MODEL_HEIGHT      416 
 
-//static COCODetect *detect = new COCODetect();
+// Classification values
+#define CATEGORY_CAN 0
+#define CATEGORY_CAR 1
+
+// Results struct
+
 
 esp_err_t camera_init();
 esp_err_t camera_capture(dl::image::img_t &img);
 
 esp_err_t decode_harcoded_jpeg(const uint8_t* jpg_start, const uint8_t* jpg_end, dl::image::img_t &img);
 
-esp_err_t run_model(COCODetect* detect, dl::image::img_t img);
+esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img);
 
-esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath)
+esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath);
 
 
 

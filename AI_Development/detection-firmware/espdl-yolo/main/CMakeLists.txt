@@ -2,8 +2,9 @@ set(src_dirs        ./)
 
 set(include_dirs    ./)
 
-set(requires        coco_detect
+set(requires        can_detect
                     esp32-camera)
+                    
 
 if (IDF_TARGET STREQUAL "esp32s3")
     list(APPEND requires esp32_s3_eye_noglib
@@ -13,6 +14,6 @@ elseif (IDF_TARGET STREQUAL "esp32p4")
                          esp_lcd)
 endif()
 
-set(embed_files     "bus.jpg")
+set(embed_files     "xiao_vga_calib.jpg")
 
 idf_component_register(SRC_DIRS ${src_dirs} INCLUDE_DIRS ${include_dirs} REQUIRES ${requires} EMBED_FILES ${embed_files})
