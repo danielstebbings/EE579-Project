@@ -15,7 +15,7 @@
 #include "i2c_slave.h"
 
 #define DISTANCE_THRESHOLD 30
-#define MOTOR_05_M 150               //in ms TODO: TEST AND MODIFY
+#define MOTOR_05_M 500               //in ms TODO: TEST AND MODIFY
 #define FWD_FAST 1650
 #define FWD_SLOW 1570
 #define MOTOR_NUETRAL 1500
@@ -100,10 +100,12 @@ void bluetooth_init()
 static const char *TAG_US = "ULTRASONIC";
 
 void app_main(void) { 
-
-  
+ 
+    ESP_LOGI("APP_MAIN", "PLS WORK 1");
     bluetooth_init();
     setupMotors();
+    set_arm_sequence(); 
+
     setupUltrasonic(ECHO_PIN_US1, TRIG_PIN_US1, 1); //front
     setupUltrasonic(ECHO_PIN_US2, TRIG_PIN_US2, 2);
     setupUltrasonic(ECHO_PIN_US3, TRIG_PIN_US3, 3);
@@ -138,23 +140,13 @@ void app_main(void) {
         FINISH_MOVE,
         FINISH_WAIT
     };
-    enum State current_state = START;
+    enum State current_state = APPROACH;
     int n_inferences = 0;
 
     float distance_front[4];
+    float distance_front_avg;
 
     while(1) {
-
-    for (int j = 0; j <= 4; j++)
-    {
-        //fill buffer
-        distance_front[j] = measure_distance(ECHO_PIN_US1);
-        if (j == 4)
-        {
-            j = 0;
-        }
-        
-    }
     
     float distance_left = measure_distance(ECHO_PIN_US2);
     float distance_right = measure_distance(ECHO_PIN_US3);
@@ -194,6 +186,7 @@ void app_main(void) {
     bit 0-3 - how many objects detected 
     bit 4-7 - 0 for left, 1 for right - the bit that it is in will be what objects its for
     */
+   ESP_LOGI("APP_MAIN", "PLS WORK 3");
 
     uint8_t n = camera_header && 0x0F;
     uint8_t l1 = (camera_header && BIT4) >> 4;
@@ -207,18 +200,19 @@ void app_main(void) {
         byte[2] - 0-255 of can centre point - where 0 is the centre point 255 is far to the side
     */
 
-
+    ESP_LOGI("APP_MAIN", "PLS WORK 2");
     static const char *TAG_R = "Running";
     switch (current_state)
     {
     case START:
         ESP_LOGI(TAG_R, "STATE: START");
-        if(start_sequence) {
+        if(start_sequence || true) {
             current_state = APPROACH;
         }
         break;
 
     case APPROACH:
+
         ESP_LOGI(TAG_R, "STATE: APPROACH");
         //drive ~0.5m then stop
         uint32_t start_time = esp_timer_get_time();
@@ -226,8 +220,10 @@ void app_main(void) {
         if (((esp_timer_get_time() - start_time) / 1000) > MOTOR_05_M) {
             set_motor_speed(MOTOR_NUETRAL);
         }
-
-        current_state = APPROACH_LOOK;
+        set_motor_speed(MOTOR_NUETRAL);
+        
+        ESP_LOGI(TAG_R, "STATE: APPROACH COMPLETE");
+        current_state = APPROACH;
         break;  
 
     case APPROACH_LOOK:
@@ -238,7 +234,7 @@ void app_main(void) {
 
         for(int j = 0; j <= sizeof(distance_front); j++)
         {
-            int distance_front_avg = distance_front[j] / 4;
+            distance_front_avg = distance_front[j] / 4;
 
             //if avg distance buffer < threshold or camera detect go to approach
             if(distance_front_avg <= DISTANCE_THRESHOLD || n > 0)   //TODO: will need tidy up on n>0
@@ -258,12 +254,15 @@ void app_main(void) {
     case APPROACH_IDENTIFIED:
         ESP_LOGI(TAG_R, "STATE: APPROACH_IDENTIFIED");
         //drive towards can
-        for ()
+        set_motor_speed(FWD_SLOW);
+
+        //once under threshold distance - move to collect move
+        if(distance_front[0] < DISTANCE_THRESHOLD)  //TODO: fix
         {
-            /* code */
+            set_motor_speed(MOTOR_NUETRAL);
+            current_state = COLLECT_MOVE;
         }
         
-        //once under threshold distance - move to collect move
         break;
 
     case SEARCH_LOOK:
@@ -320,7 +319,7 @@ void app_main(void) {
         ESP_LOGI(TAG_R, "STATE: FINISH_WAIT");
         //park it
         break;
-    
+
     default:
         ESP_LOGI(TAG_R, "STATE: DEFAULT - GOING TO START");
         current_state = START;

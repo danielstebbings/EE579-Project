@@ -50,6 +50,17 @@ ledc_channel_config(&steering_channel);
 
 }
 
+void set_arm_sequence()
+{
+    //arm 
+    ESP_LOGI("MOTORS", "ARMING MOTORS");
+    set_motor_speed(1500);
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+    set_motor_speed(1500);
+    vTaskDelay(500/portTICK_PERIOD_MS);
+    ESP_LOGI("MOTORS", "ARMING COMPLETE");
+}
+
 void set_motor_speed(uint32_t speed_us)
 {
     uint32_t duty = (speed_us * (1 << 13)) / 20000;
@@ -61,7 +72,7 @@ void set_motor_speed(uint32_t speed_us)
 
 void set_motor_reverse(uint32_t speed_us)
 {
-    
+
 }
 
 bool get_motors_speed()

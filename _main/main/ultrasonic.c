@@ -49,7 +49,7 @@ float measure_distance(int ECHO_PIN)
     {
         if((esp_timer_get_time() - timeout_start) > ECHO_TIMEOUT)
         {
-            ESP_LOGW(TAG, "TIMEOUT WAITING FOR ECHO TO GO HIGH ON %d", ECHO_PIN);
+            //ESP_LOGW(TAG, "TIMEOUT WAITING FOR ECHO TO GO HIGH ON %d", ECHO_PIN);
             return -1.0;
         }
 
@@ -60,7 +60,7 @@ float measure_distance(int ECHO_PIN)
     {
         if((esp_timer_get_time() - start_time) > ECHO_TIMEOUT)
         {
-            ESP_LOGW(TAG, "TIMEOUT WAITING FOR ECHO TO GO LOW ON %d", ECHO_PIN);
+            //ESP_LOGW(TAG, "TIMEOUT WAITING FOR ECHO TO GO LOW ON %d", ECHO_PIN);
             return -1.0;
         }
     }
