@@ -1,11 +1,15 @@
 #include "run_model.hpp"
+#include "i2c_handling.h"
 
+#include "driver/i2c_types.h"
 #include "esp_camera.h"
 #include "esp_log.h"
 #include "esp_err.h"
 #include "esp_log_timestamp.h"
 
-static const char *TAG = "cam_handling";
+
+
+static const char *TAG = "run_model";
 uint8_t *snapshot_buf = (uint8_t *)malloc(CAM_WIDTH * CAM_HEIGHT * CAM_PIX_BYTES); // points to the output of the capture
 
 esp_err_t camera_init() {
@@ -39,7 +43,7 @@ esp_err_t camera_init() {
     config.frame_size = FRAMESIZE_VGA;   // QQVGA-UXGA Do not use sizes above QVGA when not JPEG
 
     config.jpeg_quality = 10; // 0-63 lower number means higher quality
-    config.fb_count = 2;      // if more than one; i2s runs in continuous modeconfig. Use only with JPEG
+    config.fb_count = 1;      // if more than one; i2s runs in continuous modeconfig. Use only with JPEG
     config.fb_location = CAMERA_FB_IN_PSRAM;
     config.grab_mode = CAMERA_GRAB_LATEST;
 
@@ -90,7 +94,7 @@ esp_err_t decode_harcoded_jpeg(const uint8_t* jpg_start, const uint8_t* jpg_end,
     return ESP_OK;
 };
 
-esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img) {
+esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img, std::array<dl::detect::result_t,4> &detect_arr) {
     ESP_LOGI(TAG, "Starting Inference");
     uint32_t inference_start = esp_log_timestamp(); // returns ms
     std::list<dl::detect::result_t> &detect_results = detect->run(img);
@@ -101,14 +105,19 @@ esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img) {
     dl::detect::result_t best_can;
     best_can.score = 0.0;
     best_can.category = -1; // To detect if unclassified
-    dl::detect::result_t best_car;
-    best_car.score = 0.0;
-    best_car.category = -1; // To detect if unclassified
+    //dl::detect::result_t best_car;
+    //best_car.score = 0.0;
+    //best_car.category = -1; // To detect if unclassified
 
+    // reinitialize detect_arr elements
+    for (auto &result : detect_arr) {
+        result = dl::detect::result_t();
+        result.score = 0.0; // Ensure that this always exists so that we can check later
+    };
 
-
+    int result_count = 0;
     for (const dl::detect::result_t &res : detect_results) {
-        ESP_LOGI(TAG,
+        ESP_LOGW(TAG,
                  "[category: %d, score: %f, x1: %d, y1: %d, x2: %d, y2: %d]",
                  res.category,
                  res.score,
@@ -116,33 +125,38 @@ esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img) {
                  res.box[1],
                  res.box[2],
                  res.box[3]);
-        // Keep track of highest score for Can and car
 
-        if (res.category == CATEGORY_CAN) {
-            if (res.score > best_can.score) {
-                ESP_LOGI(TAG, "New Best Can");
-                best_can = res;
-            }
-        } else if (res.category == CATEGORY_CAR) {
-            if (res.score > best_car.score) {
-                ESP_LOGI(TAG, "New Best Car");
-                best_car = res;
-            };
+        // Keep track of 4 highest results
+        if (result_count < 4) {
+            // Less than 4 logged already, space in buffer
+            ESP_LOGI(TAG, "Storing Result");
+            detect_arr[result_count] = res;
         } else {
-            ESP_LOGE(TAG, "UNEXPECTED CATEGORY PREDICTED");
+            // No space in buffer, have to replace something
+            ESP_LOGI(TAG, "More than 4 results, replacing first lowest");
+            // iterate through stored results, find first that has a lower score and replace
+            for (dl::detect::result_t &stored_result : detect_arr) {
+                if (stored_result.score < res.score) {
+                    ESP_LOGI(TAG, "Replacing Result");
+                    stored_result = res;
+                    break;
+                } else {
+                    // do not replace if equal or higher
+                    continue;
+                }
+            };
         };
-
+        result_count++;
     };
 
-    // Now to get the highest
+    // detect_arr is now populated
 
     return ESP_OK;
 };
 
 // Processing BBox for I2C transmission
-
-
-object_direction normalise_bbox(dl::detect::result_t bbox) {
+object_direction normalise_bbox(dl::detect::result_t &bbox) {
+    ESP_LOGI(TAG, "normalise_bbox");
 
     object_direction direction;
     // clip boxes to image boundary
@@ -174,6 +188,56 @@ object_direction normalise_bbox(dl::detect::result_t bbox) {
     norm_center = (2*norm_center) / (MODEL_WIDTH);
     direction.object_angle = norm_center;
 
-    return direction
+    ESP_LOGI(TAG, "norm_Center %d", norm_center);
 
-}
+    return direction;
+
+};
+
+esp_err_t tx_results(std::array<dl::detect::result_t,4> &detect_arr, i2c_master_dev_handle_t dev_handle) {
+
+    std::array<object_direction,4> object_directions;
+
+    // convert result_t to directions
+    uint8_t object_count = 0;
+    for (dl::detect::result_t &res : detect_arr) {
+        // only add to array if it actually contains a detection
+        if (res.score != 0.0) {
+            object_directions[object_count] = normalise_bbox(res);
+            ESP_LOGI(TAG, "post_norm: d %d, a %d", object_directions[object_count].direction, object_directions[object_count].object_angle);
+            object_count++;
+        } else {
+            continue;
+        }
+        
+    }
+    ESP_LOGI(TAG, "Constructing I2C Packet");
+    // populate I2C Packet
+    // packet[0] -> Header
+    // packet[1..4] -> Object_1 -> 4
+    uint8_t packet[5] = {0};
+    // Detection Header
+    // - - bit 0:3  - Amount of objects detected, 0 -> 4
+    // - - bit 4    - Object 1 left / right flag
+    // - - bit 5    - Object 2 left / right flag
+    // - - bit 6    - Object 3 left / right flag
+    // - - bit 7    - Object 4 left / right flag
+    packet[0] = object_count;
+    int flag_bit_pos;
+    uint8_t flag;
+    for (int it = 0; it < object_count; it++) {
+        flag_bit_pos = 4 + it;
+        flag = object_directions[it].direction << flag_bit_pos;
+        packet[0] = packet[0] || flag;
+        packet[it+1] = object_directions[it].object_angle;
+    }
+
+    ESP_LOGI(TAG, "Transmitting I2C Packet with %d objects", object_count);
+    ESP_LOGI(TAG, "PKT: H %02X | C0 %02X | C1 %02X | C2 %02X | C3 %02X |", packet[0],packet[1],packet[2],packet[3],packet[4]);
+    if (register_write_bytes(dev_handle,ESP_ADDR, packet) != ESP_OK) {
+        ESP_LOGE(TAG, "Packet transmission failed");
+    }
+
+    return ESP_OK;
+
+};

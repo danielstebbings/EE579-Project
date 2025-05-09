@@ -2,6 +2,8 @@
 #include "esp_log.h"
 #include "bsp/esp-bsp.h"
 
+#include "driver/i2c_types.h"
+
 #define CAMERA_MODEL_XIAO_ESP32S3 // Has PSRAM
 
 #define PWDN_GPIO_NUM -1
@@ -44,7 +46,7 @@ esp_err_t camera_capture(dl::image::img_t &img);
 
 esp_err_t decode_harcoded_jpeg(const uint8_t* jpg_start, const uint8_t* jpg_end, dl::image::img_t &img);
 
-esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img);
+esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img, std::array<dl::detect::result_t,4> &detect_arr);
 
 esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath);
 
@@ -57,4 +59,8 @@ typedef struct {
     bool direction; // 0 = left, 1 = right 
 } object_direction;
 
-object_direction normalise_bbox(dl::detect::result_t bbox);
+object_direction normalise_bbox(dl::detect::result_t &bbox);
+
+// Transmit Results
+
+esp_err_t tx_results(std::array<dl::detect::result_t,4> &detect_arr, i2c_master_dev_handle_t dev_handle);
