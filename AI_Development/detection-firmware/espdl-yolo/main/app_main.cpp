@@ -6,23 +6,22 @@
 
 #include "driver/temperature_sensor.h"
 
+#include "i2c_handling.h"
+#include "driver/i2c.h"
+
 extern const uint8_t xiao_vga_calib_jpg_start[] asm("_binary_xiao_vga_calib_jpg_start");
 extern const uint8_t xiao_vga_calib_jpg_end[] asm("_binary_xiao_vga_calib_jpg_end");
-static const char *TAG = "yolo11n";
+static const char *TAG = "app_main.cpp";
 
-
-
-void check_psram_status() {
-    size_t total_psram = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
-    size_t free_psram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
-    size_t largest_block = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-
-    ESP_LOGI("PSRAM", "Total PSRAM: %d bytes", total_psram);
-    ESP_LOGI("PSRAM", "Free PSRAM: %d bytes", free_psram);
-    ESP_LOGI("PSRAM", "Largest Free Block: %d bytes", largest_block);
-}
 extern "C" void app_main(void) {
-    check_psram_status();
+    // Setup I2C
+    i2c_master_bus_handle_t bus_handle;
+    i2c_master_dev_handle_t dev_handle;
+    i2c_master_init(&bus_handle, &dev_handle);
+
+    // initialise result buffer
+    std::array<dl::detect::result_t,4> result_buffer;
+
     ESP_LOGI(TAG, "app_main");
     ESPDetDetect* detect = new ESPDetDetect();
     dl::image::img_t img;
@@ -49,9 +48,14 @@ extern "C" void app_main(void) {
             {}              // crop_area: empty = full image
         );
 
-        run_model(detect, res_img);
+        run_model(detect, res_img, result_buffer);
     } else {
-        run_model(detect, img);
+        run_model(detect, img, result_buffer);
+    }
+
+    // transmit current result buffer 
+    if (tx_results(result_buffer, dev_handle) != ESP_OK) {
+        ESP_LOGE(TAG, "I2C transmit failed!");
     }
 
     ESP_LOGI(TAG, "Decoding Camera Output");
@@ -78,11 +82,16 @@ extern "C" void app_main(void) {
                     {}              // crop_area: empty = full image
                 );
 
-                run_model(detect, res_img);
+                run_model(detect, res_img,  result_buffer);
             } else {
-                run_model(detect, img);
+                run_model(detect, img,      result_buffer);
             }
             
+        };
+
+        // transmit current result buffer
+        if (tx_results(result_buffer, dev_handle) != ESP_OK) {
+            ESP_LOGE(TAG, "I2C transmit failed!");
         }
         
     }
