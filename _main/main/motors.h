@@ -19,12 +19,13 @@
 #include "esp_gap_bt_api.h"
 
 // GPIO Pin Definitions
-#define MOTOR_PWM_GPIO      18
-#define SERVO_PWM_GPIO      19
-#define MAGNET_GPIO         21
-#define STEERING_SERVO_GPIO 22
+#define MOTOR_PWM_GPIO      14
+#define SERVO_PWM_GPIO      23
+#define MAGNET_GPIO         15
+#define STEERING_SERVO_GPIO 27
 
 void setupMotors();
+void set_arm_sequence();
 void set_motor_speed(uint32_t speed_us);
 bool get_motor_speed();
 void set_motor_reverse(uint32_t speed_us);
