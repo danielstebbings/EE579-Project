@@ -70,9 +70,19 @@ void set_motor_speed(uint32_t speed_us)
     ESP_LOGI("MOTORS", "Set motors to %lu duty", duty);
 }
 
-void set_motor_reverse(uint32_t speed_us)
+void set_motor_reverse()
 {
-
+    set_motor_speed(1500);
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+    set_motor_speed(1100);
+    vTaskDelay(500/portTICK_PERIOD_MS);
+    set_motor_speed(1500);
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+    set_motor_speed(1100);
+    vTaskDelay(500/portTICK_PERIOD_MS);
+    set_motor_speed(1500);
+    vTaskDelay(1000/portTICK_PERIOD_MS);
+    set_motor_speed(1100);
 }
 
 bool get_motors_speed()

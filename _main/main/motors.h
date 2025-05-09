@@ -18,6 +18,8 @@
 #include "nvs_flash.h" 
 #include "esp_gap_bt_api.h"
 
+#include "ultrasonic.h"
+
 // GPIO Pin Definitions
 #define MOTOR_PWM_GPIO      14
 #define SERVO_PWM_GPIO      23
@@ -28,7 +30,7 @@ void setupMotors();
 void set_arm_sequence();
 void set_motor_speed(uint32_t speed_us);
 bool get_motor_speed();
-void set_motor_reverse(uint32_t speed_us);
+void set_motor_reverse();
 void set_servo_angle(int angle);
 void magnet_on();
 void magnet_off();

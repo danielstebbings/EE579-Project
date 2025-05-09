@@ -2,9 +2,9 @@
 
 #define I2C_SLAVE_NUM 0
 #define ESP_ADDR 0x58
-#define I2C_SLAVE_TIMEOUT_MS 100
+#define I2C_SLAVE_TIMEOUT_MS 1000
 #define I2C_RX_BUF_LEN 256
-#define I2C_TX_BUF_LEN 256
+#define I2C_TX_BUF_LEN 32
 
 
 static const char *TAG = "I2C_SLAVE"; 
@@ -52,14 +52,14 @@ esp_err_t i2c_slave_read(uint8_t *data, size_t len)
 }
 
 // Write data to master8
-esp_err_t i2c_slave_write(const uint8_t *data, size_t len)
-{
-    int bytes_written = i2c_slave_write_buffer(I2C_SLAVE_NUM, data, len, I2C_SLAVE_TIMEOUT_MS / portTICK_PERIOD_MS);
-    if (bytes_written == len) {
-        ESP_LOGI(TAG, "Sent %d bytes to master", bytes_written);
-        return ESP_OK;
-    } else {
-        ESP_LOGE(TAG, "Failed to write full data to master");
-        return ESP_FAIL;
-    }
-}
+// esp_err_t i2c_slave_write(const uint8_t *data, size_t len)
+// {
+//     int bytes_written = i2c_slave_write_buffer(I2C_SLAVE_NUM, data, len, I2C_SLAVE_TIMEOUT_MS / portTICK_PERIOD_MS);
+//     if (bytes_written == len) {
+//         ESP_LOGI(TAG, "Sent %d bytes to master", bytes_written);
+//         return ESP_OK;
+//     } else {
+//         ESP_LOGE(TAG, "Failed to write full data to master");
+//         return ESP_FAIL;
+//     }
+// }
