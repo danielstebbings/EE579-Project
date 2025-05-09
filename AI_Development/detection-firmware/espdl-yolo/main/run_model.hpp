@@ -50,3 +50,11 @@ esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath);
 
 
 
+// Processing BBox for I2C transmission
+
+typedef struct {
+    uint8_t object_angle;
+    bool direction; // 0 = left, 1 = right 
+} object_direction;
+
+object_direction normalise_bbox(dl::detect::result_t bbox);

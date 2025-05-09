@@ -6,23 +6,27 @@
 
 #include "driver/temperature_sensor.h"
 
+#include "i2c_master.h"
+#include "i2c_slave.h"
+
+
 extern const uint8_t xiao_vga_calib_jpg_start[] asm("_binary_xiao_vga_calib_jpg_start");
 extern const uint8_t xiao_vga_calib_jpg_end[] asm("_binary_xiao_vga_calib_jpg_end");
-static const char *TAG = "yolo11n";
+static const char *TAG = "app_main.cpp";
 
-
-
-void check_psram_status() {
-    size_t total_psram = heap_caps_get_total_size(MALLOC_CAP_SPIRAM);
-    size_t free_psram = heap_caps_get_free_size(MALLOC_CAP_SPIRAM);
-    size_t largest_block = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-
-    ESP_LOGI("PSRAM", "Total PSRAM: %d bytes", total_psram);
-    ESP_LOGI("PSRAM", "Free PSRAM: %d bytes", free_psram);
-    ESP_LOGI("PSRAM", "Largest Free Block: %d bytes", largest_block);
-}
 extern "C" void app_main(void) {
-    check_psram_status();
+    // Setup and test I2C
+    
+    if (init_i2c_master() != ESP_OK) {
+        ESP_LOGE(TAG, "ERROR, COULD NOT INIT I2C")
+    } else {
+        
+    }
+
+
+
+
+
     ESP_LOGI(TAG, "app_main");
     ESPDetDetect* detect = new ESPDetDetect();
     dl::image::img_t img;

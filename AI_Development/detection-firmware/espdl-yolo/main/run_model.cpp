@@ -139,56 +139,41 @@ esp_err_t run_model(ESPDetDetect* detect, dl::image::img_t img) {
     return ESP_OK;
 };
 
+// Processing BBox for I2C transmission
 
-/*
-esp_err_t save_image_as_jpeg(dl::image::img_t &img, const char *filepath) {
-    jpeg_enc_cfg_t jpeg_cfg = {
-        .width      = img.width,
-        .height     = img.height,
-        .src_type   = JPEG_RAW_TYPE_RGB888,
-        .quality    = 90,
-    };
 
-     // Estimate max output size: width * height / 2 is usually safe for JPEG
-     size_t max_jpeg_size = width * height / 2;
-     uint8_t *jpeg_buf = (uint8_t *)heap_caps_malloc(max_jpeg_size, MALLOC_CAP_SPIRAM);
-     if (!jpeg_buf) {
-         ESP_LOGE(TAG, "Failed to allocate JPEG buffer");
-         return ESP_ERR_NO_MEM;
-     }
+object_direction normalise_bbox(dl::detect::result_t bbox) {
 
-     jpeg_enc_output_t out_buf = {
-        .buf = jpeg_buf,
-        .buf_size = max_jpeg_size,
-        .out_size = 0,
-    };
+    object_direction direction;
+    // clip boxes to image boundary
+    bbox.limit_box(MODEL_WIDTH, MODEL_HEIGHT);
+    int box_center = bbox.box[2] - bbox.box[0];
 
-    ret = esp_jpeg_encode(&jpeg_cfg, rgb888_data, &out_buf);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "JPEG encoding failed");
-        heap_caps_free(jpeg_buf);
-        return ret;
+    int img_center = MODEL_WIDTH / 2;
+
+    int norm_center;
+
+    if (box_center >= img_center) {
+        // Right side of image
+        direction.direction = true;
+
+        // normalise to 0->255, positive angle
+        norm_center = (box_center - img_center) * 255;
+        norm_center = (2*norm_center) / (MODEL_WIDTH);
+
+
+    } else {
+        // Left side of image
+        direction.direction = false;
+
+        // normalise to 0-255, negative angle
+        norm_center  = (box_center) * 255;
+
+
     }
+    norm_center = (2*norm_center) / (MODEL_WIDTH);
+    direction.object_angle = norm_center;
 
-    // Write to file
-    FILE *f = fopen(filepath, "wb");
-    if (!f) {
-        ESP_LOGE(TAG, "Failed to open file %s for writing", filepath);
-        heap_caps_free(jpeg_buf);
-        return ESP_FAIL;
-    }
-
-    size_t written = fwrite(out_buf.buf, 1, out_buf.out_size, f);
-    fclose(f);
-    heap_caps_free(jpeg_buf);
-
-    if (written != out_buf.out_size) {
-        ESP_LOGE(TAG, "Failed to write complete JPEG file");
-        return ESP_FAIL;
-    }
-
-    ESP_LOGI(TAG, "Saved JPEG to %s (%d bytes)", filepath, (int)written);
-    return ESP_OK;
+    return direction
 
 }
-    */
