@@ -52,11 +52,18 @@ extern "C" void app_main(void) {
     } else {
         run_model(detect, img, result_buffer);
     }
-
+    // DEBUG
+    while(true) {
     // transmit current result buffer 
     if (tx_results(result_buffer, dev_handle) != ESP_OK) {
         ESP_LOGE(TAG, "I2C transmit failed!");
+        i2c_master_init(&bus_handle, &dev_handle);
+        vTaskDelay(1000/portTICK_PERIOD_MS);
+        
+
     }
+    
+    };
 
     ESP_LOGI(TAG, "Decoding Camera Output");
     camera_init();
