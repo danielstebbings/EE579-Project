@@ -1,6 +1,6 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
-    "idf.espIdfPathWin": "C:\\Users\\logan\\esp\\v5.1.6\\esp-idf",
+    "idf.espIdfPathWin": "C:\\Users\\james\\esp\\v5.1.6\\esp-idf",
     "idf.openOcdConfigs": [
         "board/esp32-bridge.cfg"
     ],
@@ -10,7 +10,7 @@
     "idf.customExtraVars": {
         "IDF_TARGET": "esp32"
     },
-    "idf.portWin": "COM7",
+    "idf.portWin": "COM5",
     "files.associations": {
         "esp_bt_device.h": "c",
         "esp_err.h": "c",

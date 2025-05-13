@@ -15,16 +15,21 @@
 #include "i2c_slave.h"
 
 #define DISTANCE_THRESHOLD 30
-#define MOTOR_05_M 500               //in ms TODO: TEST AND MODIFY
+#define MOTOR_05_M 500             //in ms TODO: TEST AND MODIFY
 #define FWD_FAST 1650
+#define FWD_MID 1600
 #define FWD_SLOW 1570
 #define MOTOR_NUETRAL 1500
+#define RVRS_SLOW 1400
+#define RVRS_FAST 1200
 #define IDENTIFY_TIMEOUT 1337
+#define SEARCH_TIMEOUT 2000
 
 
 static const char* TAG_BT = "BLUETOOTH";
 // Bluetooth Event Handler
 bool start_sequence = false;
+bool magnet_enabled = false;
 void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
     switch (event)
@@ -45,10 +50,13 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         if (strcmp((char *)param->data_ind.data, "on") == 0)
         {
             magnet_on();
+            magnet_enabled = true;
+            
         }
         else if (strcmp((char *)param->data_ind.data, "off") == 0)
         {
             magnet_off();
+            magnet_enabled = false;
         }
         else if (strcmp((char *)param->data_ind.data, "start") == 0)
         {
@@ -140,14 +148,22 @@ void app_main(void) {
         FINISH_MOVE,
         FINISH_WAIT
     };
-    enum State current_state = APPROACH;
+    enum State current_state = START;
     int n_inferences = 0;
 
+    int i = 0;
     float distance_front[4];
     float distance_front_avg;
+    int search_count = 0;   //keep track how many times weve been here
 
     while(1) {
+
+    if (i > 4)
+    {
+        i = 0;
+    }
     
+    distance_front[i] = measure_distance(ECHO_PIN_US1);
     float distance_left = measure_distance(ECHO_PIN_US2);
     float distance_right = measure_distance(ECHO_PIN_US3);
 
@@ -173,13 +189,14 @@ void app_main(void) {
     */
 
     //Recieve camera data
-    uint8_t recv_date[4] = {0};
+    uint8_t recv_date[6] = {0};
     i2c_slave_read(recv_date, sizeof(recv_date));
-
-    uint8_t camera_header = recv_date[0];
-    uint8_t camera_angle_1 = recv_date[1];
-    uint8_t camera_angle_2 = recv_date[2];
-    uint8_t camera_angle_3 = recv_date[3];
+    ESP_LOGI(TAG_BT, "BUF: A %02X | H %02X | C0 %02X | C1 %02X | C2 %02X | C3 %02X |", recv_date[0],recv_date[1],recv_date[2],recv_date[3],recv_date[4],recv_date[5]);
+    uint8_t camera_header = recv_date[1];
+    uint8_t camera_angle_1 = recv_date[2];
+    uint8_t camera_angle_2 = recv_date[3];
+    uint8_t camera_angle_3 = recv_date[4];
+    uint8_t camera_angle_4 = recv_date[5];
 
     //split camera header
     /*
@@ -192,6 +209,8 @@ void app_main(void) {
     uint8_t l1 = (camera_header && BIT4) >> 4;
     uint8_t l2 = (camera_header && BIT5) >> 4;
     uint8_t l3 = (camera_header && BIT6) >> 4;
+    uint8_t l4 = (camera_header && BIT7) >> 4;
+    
     
     /* 
         from Daniels camera - uint8_t
@@ -200,7 +219,6 @@ void app_main(void) {
         byte[2] - 0-255 of can centre point - where 0 is the centre point 255 is far to the side
     */
 
-    ESP_LOGI("APP_MAIN", "PLS WORK 2");
     static const char *TAG_R = "Running";
     switch (current_state)
     {
@@ -212,11 +230,10 @@ void app_main(void) {
         break;
 
     case APPROACH:
-
         ESP_LOGI(TAG_R, "STATE: APPROACH");
         //drive ~0.5m then stop
         uint32_t start_time = esp_timer_get_time();
-        set_motor_speed(FWD_SLOW);
+        set_motor_speed(FWD_FAST);
         if (((esp_timer_get_time() - start_time) / 1000) > MOTOR_05_M) {
             set_motor_speed(MOTOR_NUETRAL);
         }
@@ -268,8 +285,32 @@ void app_main(void) {
     case SEARCH_LOOK:
         ESP_LOGI(TAG_R, "STATE: SEARCH_LOOK");
         //like approach look except we keep track how long we are here
+        search_count++;
+        start_time = esp_timer_get_time();
+
         //if we been in too many times - go to lost move
-        //goes to search move if does not find
+        if(search_count > 5 || ((esp_timer_get_time() - start_time) / 1000) > SEARCH_TIMEOUT)
+        {
+            current_state = LOST_MOVE;
+        }
+        else
+        {
+            for(int j = 0; j <= sizeof(distance_front); j++)
+            {
+                distance_front_avg = distance_front[j] / 4;
+                //if avg distance buffer < threshold or camera detect go to approach
+                if(distance_front_avg <= DISTANCE_THRESHOLD || n > 0)   //TODO: will need tidy up on n>0
+                {
+                    //SOMETHING THERE
+                    current_state = APPROACH_IDENTIFIED;
+                }
+                else
+                {
+                    //goes to search move if does not find
+                    current_state = SEARCH_MOVE;
+                }
+            }
+        }
         break;
 
     case SEARCH_MOVE:
@@ -290,9 +331,20 @@ void app_main(void) {
         //Drive backwards
         start_time = esp_timer_get_time();
         set_motor_reverse(MOTOR_NUETRAL);
+        
         if (((esp_timer_get_time() - start_time) / 1000) > 4*MOTOR_05_M) {
             set_motor_speed(MOTOR_NUETRAL);
         }
+        //if detect go 
+        if(distance_front_avg <= DISTANCE_THRESHOLD || n >= 1)
+        {
+            current_state = APPROACH_IDENTIFIED;
+        }
+        else
+        {
+            current_state = LOST_SEARCH;
+        }
+        //else lost search
         break;
 
     case LOST_SEARCH:
@@ -303,6 +355,16 @@ void app_main(void) {
     case COLLECT_MOVE:
         ESP_LOGI(TAG_R, "STATE: COLLECT_MOVE");
         //position magnet over the can
+        set_motor_speed(MOTOR_NUETRAL);
+        //detect magnet on
+        if(magnet_enabled)
+        {
+        start_time = esp_timer_get_time();
+            if (((esp_timer_get_time() - start_time) / 1000) > 3000) {
+                current_state = FINISH_MOVE;
+            }  
+        }
+        //once done
         break;
 
     case COLLECT_WAIT:
@@ -313,11 +375,19 @@ void app_main(void) {
     case FINISH_MOVE:
         ESP_LOGI(TAG_R, "STATE: FINISH_MOVE");
         //floor it backwards
+        start_time = esp_timer_get_time();
+        set_motor_reverse();
+        if (((esp_timer_get_time() - start_time) / 1000) > 8*MOTOR_05_M) {     //~8m reverse
+            set_motor_speed(MOTOR_NUETRAL);
+            current_state = FINISH_WAIT;
+        }
+        
         break;
 
     case FINISH_WAIT:
         ESP_LOGI(TAG_R, "STATE: FINISH_WAIT");
         //park it
+        set_motor_speed(MOTOR_NUETRAL);
         break;
 
     default:
